@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ApexLedger &bull; Banking Ledger Platform</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #121927;
+      --border: #1e293b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #38bdf8;
+      --primary-hover: #0ea5e9;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --badge-bg: #1e293b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding: 24px; min-height: 100vh; }
+    .container { max-width: 1280px; margin: 0 auto; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+    .logo { display: flex; align-items: center; gap: 12px; font-size: 22px; font-weight: 700; color: var(--text); }
+    .logo-badge { background: linear-gradient(135deg, #0284c7, #38bdf8); color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .status-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.15); color: var(--success); padding: 6px 14px; border-radius: 9999px; font-size: 13px; font-weight: 600; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .status-badge.error { background: rgba(239, 68, 68, 0.15); color: var(--danger); border-color: rgba(239, 68, 68, 0.3); }
+    .pulse { width: 8px; height: 8px; border-radius: 50%; background: currentColor; box-shadow: 0 0 10px currentColor; }
+    
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2); }
+    .card-title { font-size: 13px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px; margin-bottom: 8px; font-weight: 600; }
+    .card-val { font-size: 26px; font-weight: 700; color: #fff; }
+    .card-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+    .tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+    .tab-btn { background: transparent; border: none; color: var(--text-muted); padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+    .tab-btn:hover { color: var(--text); background: var(--badge-bg); }
+    .tab-btn.active { color: var(--primary); background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); }
+
+    .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    @media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
+
+    .form-group { margin-bottom: 14px; }
+    label { display: block; font-size: 12px; font-weight: 600; color: var(--text-muted); margin-bottom: 6px; }
+    input, select { width: 100%; padding: 10px 12px; background: #0b0f19; border: 1px solid var(--border); border-radius: 8px; color: #fff; font-size: 14px; outline: none; }
+    input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2); }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 12px; background: var(--primary); color: #0b0f19; font-weight: 700; font-size: 14px; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+    .btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .btn-secondary { background: var(--border); color: #fff; }
+    .btn-secondary:hover { background: #334155; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; padding: 12px; color: var(--text-muted); border-bottom: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+    td { padding: 12px; border-bottom: 1px solid var(--border); color: var(--text); }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .badge-debit { color: var(--danger); background: rgba(239, 68, 68, 0.1); padding: 3px 8px; border-radius: 4px; font-weight: 600; font-size: 11px; }
+    .badge-credit { color: var(--success); background: rgba(16, 185, 129, 0.1); padding: 3px 8px; border-radius: 4px; font-weight: 600; font-size: 11px; }
+    .hash-text { font-family: monospace; font-size: 11px; color: var(--primary); cursor: pointer; }
+    .alert { padding: 12px; border-radius: 8px; margin-bottom: 16px; font-size: 13px; display: none; }
+    .alert-success { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); }
+    .alert-error { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <span>ApexLedger</span>
+        <span class="logo-badge">Core Engine</span>
+      </div>
+      <div style="display:flex; gap:12px; align-items:center;">
+        <div id="statusBadge" class="status-badge">
+          <span class="pulse"></span>
+          <span id="statusText">System Healthy</span>
+        </div>
+        <button class="btn btn-secondary" style="width:auto; padding:8px 14px;" onclick="refreshData()">&#8635; Refresh</button>
+      </div>
+    </header>
+
+    <div class="stats-grid">
+      <div class="card">
+        <div class="card-title">Total Accounts</div>
+        <div class="card-val" id="statAccounts">-</div>
+        <div class="card-sub">Active Customer Accounts</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Global Debits = Credits</div>
+        <div class="card-val" id="statConservation" style="color:var(--success);">&#10003; Conserved</div>
+        <div class="card-sub" id="statDebitsCredits">Debits: 0 &bull; Credits: 0</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Tamper-Proof Audit Chain</div>
+        <div class="card-val" id="statAudit" style="color:var(--primary);">&#128274; Verified</div>
+        <div class="card-sub">SHA-256 Hash Chaining Active</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Double-Entry Counterparty</div>
+        <div class="card-val">System CASH</div>
+        <div class="card-sub">Zero-Sum Ledger Guarantee</div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('transfer')">Peer Transfer</button>
+      <button class="tab-btn" onclick="switchTab('deposit')">Deposit Cash</button>
+      <button class="tab-btn" onclick="switchTab('hold')">Two-Phase Hold</button>
+      <button class="tab-btn" onclick="switchTabaccount('account')">New Account</button>
+      <button class="tab-btn" onclick="switchTab('reconcile')">Audit &amp; Reconciliation</button>
+    </div>
+
+    <div id="alertBox" class="alert"></div>
+
+    <div class="main-grid">
+      <!-- Left Column: Forms -->
+      <div class="card">
+        <!-- Tab 1: Transfer Form -->
+        <div id="panel-transfer">
+          <h3 style="margin-bottom:16px;">Execute Transfer</h3>
+          <div class="form-group">
+            <label>Sender Account (From)</label>
+            <select id="transferFrom"></select>
+          </div>
+          <div class="form-group">
+            <label>Recipient Account (To)</label>
+            <select id="transferTo"></select>
+          </div>
+          <div class="form-group">
+            <label>Amount (in minor units, e.g. 5000 = ₹50.00)</label>
+            <input type="number" id="transferAmount" value="5000" min="1">
+          </div>
+          <button class="btn" onclick="doTransfer()">Transfer Funds &rarr;</button>
+        </div>
+
+        <!-- Tab 2: Deposit Form -->
+        <div id="panel-deposit" style="display:none;">
+          <h3 style="margin-bottom:16px;">Deposit Cash</h3>
+          <div class="form-group">
+            <label>Target Account</label>
+            <select id="depositAccount"></select>
+          </div>
+          <div class="form-group">
+            <label>Amount (in minor units, e.g. 25000 = ₹250.00)</label>
+            <input type="number" id="depositAmount" value="25000" min="1">
+          </div>
+          <button class="btn" onclick="doDeposit()">Deposit to Account &rarr;</button>
+        </div>
+
+        <!-- Tab 3: Hold Form -->
+        <div id="panel-hold" style="display:none;">
+          <h3 style="margin-bottom:16px;">Create Authorization Hold</h3>
+          <div class="form-group">
+            <label>Account</label>
+            <select id="holdAccount"></select>
+          </div>
+          <div class="form-group">
+            <label>Hold Amount (Minor Units)</label>
+            <input type="number" id="holdAmount" value="10000" min="1">
+          </div>
+          <div class="form-group">
+            <label>Description</label>
+            <input type="text" id="holdDesc" value="Hotel Security Deposit">
+          </div>
+          <button class="btn" onclick="doCreateHold()">Reserve Hold &rarr;</button>
+        </div>
+
+        <!-- Tab 4: Account Creation -->
+        <div id="panel-account" style="display:none;">
+          <h3 style="margin-bottom:16px;">Open New Account</h3>
+          <div class="form-group">
+            <label>Account Owner Name</label>
+            <input type="text" id="accountOwner" placeholder="e.g. Alice, Bob, Merchant Corp">
+          </div>
+          <div class="form-group">
+            <label>Currency</label>
+            <select id="accountCurrency">
+              <option value="INR">INR (₹)</option>
+              <option value="USD">USD ($)</option>
+              <option value="EUR">EUR (€)</option>
+              <option value="GBP">GBP (£)</option>
+            </select>
+          </div>
+          <button class="btn" onclick="doCreateAccount()">Create Account &rarr;</button>
+        </div>
+
+        <!-- Tab 5: Reconcile & Audit -->
+        <div id="panel-reconcile" style="display:none;">
+          <h3 style="margin-bottom:16px;">Reconciliation &amp; Cryptographic Verification</h3>
+          <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">
+            Audits the global ledger entries, verifies that &sum; Debits strictly equals &sum; Credits, and validates the SHA-256 cryptographic hash chain across all accounts.
+          </p>
+          <div style="display:flex; gap:12px;">
+            <button class="btn" onclick="doReconcile()">Run Full Reconciliation</button>
+            <button class="btn btn-secondary" onclick="doVerifyAudit()">Verify Audit Chain</button>
+          </div>
+          <pre id="auditOutput" style="margin-top:16px; background:#0b0f19; padding:12px; border-radius:8px; font-size:12px; color:var(--primary); overflow:auto; max-height:200px; display:none;"></pre>
+        </div>
+      </div>
+
+      <!-- Right Column: Live Accounts List -->
+      <div class="card">
+        <h3 style="margin-bottom:16px;">Accounts &amp; Available Balances</h3>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead>
+              <tr>
+                <th>Account</th>
+                <th>Currency</th>
+                <th>Total Balance</th>
+                <th>Available</th>
+              </tr>
+            </thead>
+            <tbody id="accountsTableBody">
+              <tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Loading accounts...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Statement Entries Table -->
+    <div class="card" style="margin-top:24px;">
+      <h3 style="margin-bottom:16px;">Live Ledger Journal Entries (Double-Entry Log)</h3>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Transaction ID</th>
+              <th>Account</th>
+              <th>Side</th>
+              <th>Amount</th>
+              <th>Cryptographic Entry Hash (SHA-256)</th>
+            </tr>
+          </thead>
+          <tbody id="entriesTableBody">
+            <tr><td colspan="6" style="text-align:center; color:var(--text-muted);">No entries recorded yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let accounts = [];
+
+    function showAlert(msg, isSuccess = true) {
+      const box = document.getElementById('alertBox');
+      box.className = 'alert ' + (isSuccess ? 'alert-success' : 'alert-error');
+      box.textContent = msg;
+      box.style.display = 'block';
+      setTimeout(() => { box.style.display = 'none'; }, 5000);
+    }
+
+    function switchTab(name) {
+      document.querySelectorAll('[id^="panel-"]').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      const target = document.getElementById('panel-' + name);
+      if (target) target.style.display = 'block';
+      event.target.classList.add('active');
+    }
+
+    function switchTabaccount(name) {
+      switchTab(name);
+    }
+
+    async function refreshData() {
+      try {
+        // Fetch reconcile stats
+        const recRes = await fetch('/admin/reconcile');
+        const recData = await recRes.json();
+        if (recRes.ok && recData.status === 'OK') {
+          document.getElementById('statDebitsCredits').textContent = `Debits: ${recData.total_debits} • Credits: ${recData.total_credits}`;
+          document.getElementById('statusText').textContent = 'System Healthy';
+          document.getElementById('statusBadge').className = 'status-badge';
+        } else {
+          document.getElementById('statusText').textContent = 'Discrepancy Detected';
+          document.getElementById('statusBadge').className = 'status-badge error';
+        }
+
+        renderAccounts();
+      } catch (err) {
+        console.error("Refresh error:", err);
+      }
+    }
+
+    function renderAccounts() {
+      const tbody = document.getElementById('accountsTableBody');
+      const fromSel = document.getElementById('transferFrom');
+      const toSel = document.getElementById('transferTo');
+      const depSel = document.getElementById('depositAccount');
+      const holdSel = document.getElementById('holdAccount');
+
+      if (!accounts.length) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">No accounts found. Create one to begin!</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = accounts.map(a => `
+        <tr>
+          <td>
+            <strong>${a.owner}</strong><br>
+            <span style="font-size:11px; color:var(--text-muted);">${a.id}</span>
+          </td>
+          <td>${a.currency}</td>
+          <td><strong>${(a.balance / 100).toFixed(2)}</strong> <span style="font-size:11px; color:var(--text-muted);">${a.currency}</span></td>
+          <td style="color:var(--success); font-weight:600;">${(a.available_balance / 100).toFixed(2)} ${a.currency}</td>
+        </tr>
+      `).join('');
+
+      const opts = accounts.map(a => `<option value="${a.id}">${a.owner} (Bal: ${(a.available_balance / 100).toFixed(2)} ${a.currency})</option>`).join('');
+      fromSel.innerHTML = opts;
+      toSel.innerHTML = opts;
+      depSel.innerHTML = opts;
+      holdSel.innerHTML = opts;
+      if (toSel.options.length > 1) toSel.selectedIndex = 1;
+
+      document.getElementById('statAccounts').textContent = accounts.length;
+    }
+
+    async function doCreateAccount() {
+      const owner = document.getElementById('accountOwner').value.trim();
+      const currency = document.getElementById('accountCurrency').value;
+      if (!owner) return showAlert("Owner name is required", false);
+
+      try {
+        const res = await fetch('/accounts', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({owner, currency})
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showAlert(`Account created for ${data.owner}! ID: ${data.id}`);
+          accounts.push(data);
+          renderAccounts();
+          document.getElementById('accountOwner').value = '';
+          switchTab('transfer');
+        } else {
+          showAlert(data.error || "Failed to create account", false);
+        }
+      } catch (err) {
+        showAlert(err.message, false);
+      }
+    }
+
+    async function doDeposit() {
+      const id = document.getElementById('depositAccount').value;
+      const amount = parseInt(document.getElementById('depositAmount').value, 10);
+      if (!id || !amount) return showAlert("Select account and enter valid amount", false);
+
+      const key = "dep-ui-" + Date.now();
+      try {
+        const res = await fetch(`/accounts/${id}/deposits`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json', 'Idempotency-Key': key},
+          body: JSON.stringify({amount})
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showAlert(`Deposited ${(amount/100).toFixed(2)}! New balance: ${(data.balance/100).toFixed(2)}`);
+          await fetchAccount(id);
+          fetchEntries(id);
+        } else {
+          showAlert(data.error || "Deposit failed", false);
+        }
+      } catch (err) {
+        showAlert(err.message, false);
+      }
+    }
+
+    async function doTransfer() {
+      const from = document.getElementById('transferFrom').value;
+      const to = document.getElementById('transferTo').value;
+      const amount = parseInt(document.getElementById('transferAmount').value, 10);
+      if (from === to) return showAlert("Cannot transfer to the same account", false);
+      if (!amount || amount <= 0) return showAlert("Invalid amount", false);
+
+      const key = "tr-ui-" + Date.now();
+      try {
+        const res = await fetch('/transfers', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json', 'Idempotency-Key': key},
+          body: JSON.stringify({from, to, amount})
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showAlert(`Transferred ${(amount/100).toFixed(2)} successfully!`);
+          await fetchAccount(from);
+          await fetchAccount(to);
+          fetchEntries(from);
+        } else {
+          showAlert(data.error || "Transfer failed", false);
+        }
+      } catch (err) {
+        showAlert(err.message, false);
+      }
+    }
+
+    async function doCreateHold() {
+      const id = document.getElementById('holdAccount').value;
+      const amount = parseInt(document.getElementById('holdAmount').value, 10);
+      const description = document.getElementById('holdDesc').value;
+
+      try {
+        const res = await fetch(`/accounts/${id}/holds`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({amount, description})
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showAlert(`Hold created! ID: ${data.id}. Available balance reduced.`);
+          await fetchAccount(id);
+        } else {
+          showAlert(data.error || "Hold creation failed", false);
+        }
+      } catch (err) {
+        showAlert(err.message, false);
+      }
+    }
+
+    async function fetchAccount(id) {
+      try {
+        const res = await fetch(`/accounts/${id}`);
+        if (res.ok) {
+          const acc = await res.json();
+          const idx = accounts.findIndex(a => a.id === id);
+          if (idx >= 0) accounts[idx] = acc;
+          else accounts.push(acc);
+          renderAccounts();
+        }
+      } catch (e) {}
+    }
+
+    async function fetchEntries(id) {
+      try {
+        const res = await fetch(`/accounts/${id}/entries?limit=10`);
+        if (res.ok) {
+          const data = await res.json();
+          const tbody = document.getElementById('entriesTableBody');
+          if (data.entries && data.entries.length) {
+            tbody.innerHTML = data.entries.map(e => `
+              <tr>
+                <td>#${e.id}</td>
+                <td style="font-family:monospace; font-size:11px;">${e.transaction_id}</td>
+                <td><span style="font-family:monospace; font-size:11px;">${e.account_id}</span></td>
+                <td><span class="${e.direction === 'credit' ? 'badge-credit' : 'badge-debit'}">${e.direction.toUpperCase()}</span></td>
+                <td><strong>${(e.amount / 100).toFixed(2)}</strong></td>
+                <td><span class="hash-text" title="${e.entry_hash}">${e.entry_hash ? e.entry_hash.slice(0, 16) + '...' : 'genesis'}</span></td>
+              </tr>
+            `).join('');
+          }
+        }
+      } catch (e) {}
+    }
+
+    async function doReconcile() {
+      const out = document.getElementById('auditOutput');
+      out.style.display = 'block';
+      out.textContent = "Running global double-entry reconciliation audit...";
+      const res = await fetch('/admin/reconcile');
+      const data = await res.json();
+      out.textContent = JSON.stringify(data, null, 2);
+    }
+
+    async function doVerifyAudit() {
+      const out = document.getElementById('auditOutput');
+      out.style.display = 'block';
+      out.textContent = "Cryptographically verifying SHA-256 hash chains across all entries...";
+      const res = await fetch('/admin/verify-audit-chain');
+      const data = await res.json();
+      out.textContent = JSON.stringify(data, null, 2);
+    }
+
+    // Seed default demo accounts on first page load
+    async function initDemo() {
+      try {
+        const a1 = await (await fetch('/accounts', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({owner:'Alice', currency:'INR'})})).json();
+        const a2 = await (await fetch('/accounts', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({owner:'Bob', currency:'INR'})})).json();
+        accounts = [a1, a2];
+        await fetch(`/accounts/${a1.id}/deposits`, {method:'POST', headers:{'Content-Type':'application/json', 'Idempotency-Key':'init-dep'}, body:JSON.stringify({amount: 100000})});
+        await fetchAccount(a1.id);
+        fetchEntries(a1.id);
+      } catch (e) {}
+    }
+
+    initDemo();
+    refreshData();
+  </script>
+</body>
+</html>

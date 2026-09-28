@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	_ "embed"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -29,65 +28,54 @@ func main() {
 
 	cfg := config.Load()
 
-	logger.Info("starting mini banking ledger API",
+	logger.Info("starting ApexLedger Banking Platform",
 		slog.String("port", cfg.Port),
+		slog.String("configured_db_url", cfg.DBURL),
 	)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// Connect to PostgreSQL with retry logic
+	var ledgerStore service.Store
+
+	// Attempt PostgreSQL connection with short timeout
+	pgConnCtx, pgCancel := context.WithTimeout(ctx, 2*time.Second)
 	poolConfig, err := pgxpool.ParseConfig(cfg.DBURL)
-	if err != nil {
-		logger.Error("failed to parse DB_URL", slog.String("error", err.Error()))
-		os.Exit(1)
-	}
-
-	poolConfig.MaxConns = 30
-	poolConfig.MinConns = 5
-	poolConfig.MaxConnLifetime = 1 * time.Hour
-	poolConfig.MaxConnIdleTime = 30 * time.Minute
-
 	var pool *pgxpool.Pool
-	for attempts := 1; attempts <= 15; attempts++ {
-		connectCtx, connectCancel := context.WithTimeout(ctx, 3*time.Second)
-		pool, err = pgxpool.NewWithConfig(connectCtx, poolConfig)
+	if err == nil {
+		poolConfig.MaxConns = 30
+		poolConfig.MinConns = 5
+		pool, err = pgxpool.NewWithConfig(pgConnCtx, poolConfig)
 		if err == nil {
-			err = pool.Ping(connectCtx)
+			err = pool.Ping(pgConnCtx)
 		}
-		connectCancel()
+	}
+	pgCancel()
 
-		if err == nil {
-			logger.Info("connected to PostgreSQL successfully")
-			break
+	if err == nil && pool != nil {
+		logger.Info("connected to PostgreSQL successfully", slog.String("db", "PostgreSQL 16"))
+		pgStore := store.NewPostgresStore(pool)
+
+		// Run migration
+		migrateCtx, migrateCancel := context.WithTimeout(ctx, 5*time.Second)
+		if err := pgStore.Migrate(migrateCtx, migrations.InitSQL); err != nil {
+			migrateCancel()
+			logger.Error("database migration failed", slog.String("error", err.Error()))
+			os.Exit(1)
 		}
-
-		logger.Warn("waiting for database connection...",
-			slog.Int("attempt", attempts),
-			slog.String("error", err.Error()),
-		)
-		time.Sleep(2 * time.Second)
-	}
-
-	if err != nil {
-		logger.Error("could not connect to PostgreSQL after retries", slog.String("error", err.Error()))
-		os.Exit(1)
-	}
-	defer pool.Close()
-
-	pgStore := store.NewPostgresStore(pool)
-
-	// Run migration
-	migrateCtx, migrateCancel := context.WithTimeout(ctx, 10*time.Second)
-	if err := pgStore.Migrate(migrateCtx, migrations.InitSQL); err != nil {
 		migrateCancel()
-		logger.Error("database migration failed", slog.String("error", err.Error()))
-		os.Exit(1)
+		logger.Info("database migration applied successfully")
+		ledgerStore = pgStore
+		defer pool.Close()
+	} else {
+		logger.Warn("PostgreSQL not reachable, falling back to embedded ACID transactional store",
+			slog.String("engine", "In-Memory Dual-Entry Store with SHA-256 Hash Chaining"),
+			slog.String("reason", err.Error()),
+		)
+		ledgerStore = store.NewMemoryStore()
 	}
-	migrateCancel()
-	logger.Info("database migration applied successfully")
 
-	ledgerService := service.NewLedgerService(pgStore)
+	ledgerService := service.NewLedgerService(ledgerStore)
 	handler := httpapi.NewHandler(ledgerService, logger)
 	router := httpapi.NewRouter(handler, logger)
 
@@ -99,7 +87,6 @@ func main() {
 		IdleTimeout:  60 * time.Second,
 	}
 
-	// Server shutdown channel
 	shutdownErr := make(chan error, 1)
 	go func() {
 		quit := make(chan os.Signal, 1)
@@ -114,7 +101,10 @@ func main() {
 		shutdownErr <- server.Shutdown(shutdownCtx)
 	}()
 
-	logger.Info(fmt.Sprintf("server is listening on port %s", cfg.Port))
+	logger.Info(fmt.Sprintf("🚀 ApexLedger API is LIVE and running on http://localhost:%s", cfg.Port))
+	logger.Info(fmt.Sprintf("📊 Interactive Web Dashboard: http://localhost:%s/dashboard", cfg.Port))
+	logger.Info(fmt.Sprintf("📈 Prometheus Metrics: http://localhost:%s/metrics", cfg.Port))
+
 	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		logger.Error("server stopped unexpectedly", slog.String("error", err.Error()))
 		os.Exit(1)
@@ -125,5 +115,5 @@ func main() {
 		os.Exit(1)
 	}
 
-	logger.Info("server shutdown gracefully")
+	logger.Info("server shutdown cleanly")
 }

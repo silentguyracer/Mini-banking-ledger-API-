@@ -1,6 +1,7 @@
 package httpapi
 
 import (
+	_ "embed"
 	"log/slog"
 	"net/http"
 
@@ -8,6 +9,9 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
+
+//go:embed dashboard.html
+var dashboardHTML []byte
 
 func NewRouter(handler *Handler, logger *slog.Logger) http.Handler {
 	r := chi.NewRouter()
@@ -17,6 +21,15 @@ func NewRouter(handler *Handler, logger *slog.Logger) http.Handler {
 	r.Use(middleware.RealIP)
 	r.Use(StructuredLogger(logger))
 	r.Use(middleware.Recoverer)
+
+	// Interactive Web UI Dashboard
+	serveDashboard := func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write(dashboardHTML)
+	}
+	r.Get("/", serveDashboard)
+	r.Get("/dashboard", serveDashboard)
 
 	// Liveness & observability
 	r.Get("/healthz", handler.Healthz)
