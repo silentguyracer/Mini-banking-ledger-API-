@@ -1,251 +1,279 @@
-# Mini Banking Ledger API
+# Advanced Banking Ledger Platform
 
-A production-grade, double-entry banking ledger API written in **Go 1.24** and **PostgreSQL 16**. Built for strict transactional correctness, deterministic concurrency control, idempotent request replay, and complete auditability.
-
----
-
-## Architecture Overview
-
-```
-                      +-----------------------------+
-                      |   Client / HTTP Request     |
-                      +--------------+--------------+
-                                     |
-                                     v
-                      +-----------------------------+
-                      |   Chi Router & Middleware   |
-                      |   (ReqID, RealIP, Slog)     |
-                      +--------------+--------------+
-                                     |
-                                     v
-                      +-----------------------------+
-                      |      Ledger Service         |
-                      |   (Validations, SHA-256)    |
-                      +--------------+--------------+
-                                     |
-                                     v
-                      +-----------------------------+
-                      |      PostgreSQL Store       |
-                      | - Idempotency Claiming      |
-                      | - Deterministic Row Locks   |
-                      | - Double-Entry Engine       |
-                      +--------------+--------------+
-                                     |
-                                     v
-                      +-----------------------------+
-                      |       PostgreSQL 16         |
-                      | accounts | transactions     |
-                      | entries  | idempotency_keys |
-                      +-----------------------------+
-```
+A production-grade, double-entry financial ledger and transaction processing platform written in **Go 1.25** and **PostgreSQL 16**. Designed to emulate enterprise banking infrastructure (e.g. Stripe, Modern Treasury, Form3) with strict multi-account ACID guarantees, deterministic row-lock concurrency control, cryptographic tamper-evident audit trails, two-phase reservation holds, multi-party split payments, compensating reversals, and cross-currency foreign exchange (FX).
 
 ---
 
-## Key Design Decisions
-
-### 1. PostgreSQL over Cassandra
-- **The Problem with Cassandra:** Apache Cassandra is an AP (Available / Partition-tolerant) distributed NoSQL database designed for high-throughput writes. It lacks cross-row ACID transactions, strict multi-row locking primitives, and foreign key integrity. Enforcing double-entry invariants (where debits must strictly equal credits across different accounts) under concurrent conditions without distributed consensus or two-phase locking is exceedingly error-prone.
-- **Why Postgres:** PostgreSQL provides ACID compliance at `Read Committed` and `Serializable` isolation levels, deterministic `SELECT ... FOR UPDATE` row-level locks, and table constraints (`CHECK`, `FOREIGN KEY`). This allows us to guarantee balance correctness, prevent race conditions, and guarantee that debits equal credits in a single atomic transaction.
-
-### 2. Money as `int64` in Minor Units
-- Floating-point representations (`float32`, `float64`) suffer from IEEE 754 precision issues (e.g. `0.1 + 0.2 = 0.30000000000000004`), leading to catastrophic rounding discrepancies in financial systems.
-- All monetary amounts in this ledger are represented as **64-bit signed integers** in minor currency units (e.g., paise for INR, cents for USD). ₹100.50 is stored as `10050`.
-
-### 3. Pure Double-Entry Accounting
-- Every financial movement creates a balanced set of entries where **total debits equal total credits**:
-  $$\sum \text{Debits} = \sum \text{Credits}$$
-- For customer accounts, balance is derived as:
-  $$\text{Balance} = \sum \text{Credits} - \sum \text{Debits}$$
-- Deposits and withdrawals are not one-sided: they utilize a reserved system counterparty account named `CASH` (`00000000-0000-0000-0000-000000000001`).
-  - **Deposit:** Customer is *credited*; `CASH` is *debited*.
-  - **Withdrawal:** Customer is *debited*; `CASH` is *credited*.
-  - **Transfer:** Sender is *debited*; Receiver is *credited*.
-
-### 4. Non-Negative Balances Enforced at Two Layers
-- **Application Layer:** Pre-flight balance checks inside the locked transaction.
-- **Database Layer:** A database check constraint ensures customer accounts can never drop below zero:
-  ```sql
-  CONSTRAINT no_negative CHECK (type = 'system' OR balance >= 0)
-  ```
-  Only system counterparty accounts (such as `CASH`) are permitted to carry negative balances.
-
-### 5. Append-Only Ledger Entries
-- The `entries` table is strictly append-only. Rows are never mutated or deleted.
-- If a correction or refund is required, it must be executed as a new compensating transaction.
-
-### 6. Deterministic Lock Ordering (Deadlock Prevention)
-- When transferring funds between Account A and Account B, two concurrent reverse transfers (A &rarr; B and B &rarr; A) could easily deadlock if locks are acquired arbitrarily.
-- We eliminate deadlocks by sorting account UUIDs lexicographically and locking them in deterministic order:
-  ```go
-  ids := []uuid.UUID{from, to}
-  sort.Slice(ids, func(i, j int) bool { return ids[i].String() < ids[j].String() })
-  rows, err := tx.Query(ctx,
-      `SELECT id, balance FROM accounts WHERE id = ANY($1) ORDER BY id FOR UPDATE`, ids)
-  ```
-
-### 7. Idempotency with Request Hashing
-- Clients supply an `Idempotency-Key` header with mutation requests.
-- The service hashes the incoming request body with SHA-256 and attempts to claim the key atomically:
-  ```sql
-  INSERT INTO idempotency_keys (key, request_hash) VALUES ($1, $2)
-  ON CONFLICT (key) DO NOTHING;
-  ```
-- **Same key + same body:** The transaction returns the cached response with an `Idempotent-Replay: true` header (HTTP 200).
-- **Same key + different body:** Rejected with HTTP 422 (`ErrKeyReused`).
-- **Concurrent identical requests:** In PostgreSQL, the second `INSERT` blocks on the primary key index row lock until the first transaction commits, then discovers the conflict and safely replays the response.
-
----
-
-## Project Structure
+## 1. High-Level Architecture
 
 ```
-ledger/
-├── cmd/
-│   └── api/
-│       └── main.go                 # App entrypoint, graceful shutdown, DB pool setup
-├── internal/
-│   ├── config/
-│   │   └── config.go               # Environment configuration (PORT, DB_URL)
-│   ├── domain/
-│   │   └── domain.go               # Core domain entities, models, and domain errors
-│   ├── store/
-│   │   └── postgres.go             # PostgreSQL store, double-entry engine, row locking
-│   ├── service/
-│   │   ├── ledger.go               # Business services, validation, request hashing
-│   │   ├── ledger_unit_test.go     # Table-driven unit tests (runs without DB)
-│   │   └── ledger_test.go          # Concurrent integration tests (transfers, race conditions)
-│   └── httpapi/
-│       ├── router.go               # Chi router setup
-│       ├── handlers.go             # HTTP handlers & REST response mapping
-│       ├── handlers_test.go        # HTTP endpoints & status code tests
-│       └── middleware.go           # Structured logging (log/slog), Request ID
-├── migrations/
-│   ├── 001_init.sql                # DDL migration & system account seed
-│   └── migrations.go               # Embedded SQL migration
-├── .github/
-│   └── workflows/
-│       └── ci.yml                  # GitHub Actions CI (vet, test -race with PostgreSQL)
-├── docker-compose.yml              # Container definitions (Postgres 16 + API)
-├── Dockerfile                      # Multi-stage distroless production container
-├── Makefile                        # Lifecycle shortcuts
-├── go.mod
-├── go.sum
-└── README.md
+                       +-----------------------------+
+                       |    Client / HTTP Requests   |
+                       +--------------+--------------+
+                                      |
+                                      v
+                       +-----------------------------+
+                       |   Chi Router & Middleware   |
+                       |  - Request ID & RealIP      |
+                       |  - Structured Logging (slog)|
+                       |  - Prometheus Instrumentation|
+                       +--------------+--------------+
+                                      |
+                                      v
+                       +-----------------------------+
+                       |       Ledger Service        |
+                       |  - Business Rule Validation |
+                       |  - Deterministic SHA-256    |
+                       |  - Available Balance Logic  |
+                       +--------------+--------------+
+                                      |
+                                      v
+                       +-----------------------------+
+                       |      PostgreSQL Store       |
+                       |  - Idempotency Claiming     |
+                       |  - Deterministic Row Locks  |
+                       |  - Double-Entry Engine      |
+                       |  - Hash-Chained Audit Trail |
+                       |  - Holds & Settlement Engine|
+                       +--------------+--------------+
+                                      |
+                                      v
+                       +-----------------------------+
+                       |        PostgreSQL 16        |
+                       | accounts | transactions     |
+                       | entries  | holds            |
+                       | idempotency_keys            |
+                       +-----------------------------+
 ```
 
 ---
 
-## REST API Specification
+## 2. Advanced Engineering Capabilities
 
-| Method | Path | Headers | Description | Status Codes |
-|---|---|---|---|---|
-| `GET` | `/healthz` | - | Liveness and DB health probe | `200` |
-| `POST` | `/accounts` | - | Create new customer account | `201`, `400` |
-| `GET` | `/accounts/{id}` | - | Fetch account details and balance | `200`, `404` |
-| `GET` | `/accounts/{id}/entries` | - | Statement entries (cursor pagination via `limit`, `before`) | `200`, `404` |
-| `POST` | `/accounts/{id}/deposits` | `Idempotency-Key` | Deposit money (credited to account, debited to `CASH`) | `201`, `200`, `400`, `404`, `409`, `422` |
-| `POST` | `/accounts/{id}/withdrawals` | `Idempotency-Key` | Withdraw money (debited from account, credited to `CASH`) | `201`, `200`, `400`, `404`, `409`, `422` |
-| `POST` | `/transfers` | `Idempotency-Key` | Transfer money between two customer accounts | `201`, `200`, `400`, `404`, `409`, `422` |
-| `GET` | `/admin/reconcile` | - | Reconciles global ledger invariants and account balances | `200`, `500` |
+### 🛡️ 1. Two-Phase Commit Authorizations (Holds, Captures & Voids)
+Real-world payment processors (Visa, Mastercard, Stripe) process card payments in two distinct phases:
+- **Phase 1: Authorization (Hold):** A merchant requests a reserve hold (`POST /accounts/{id}/holds`). The ledger verifies:
+  $$\text{Available Balance} = \text{Balance} - \sum \text{Active Holds} \ge \text{Hold Amount}$$
+  The amount is ring-fenced so the customer cannot double-spend it, but no ledger entries are posted yet.
+- **Phase 2a: Capture (Settlement):** The merchant settles the transaction (`POST /holds/{id}/capture`) with the finalized amount ($\le \text{Hold Amount}$). The hold is marked `captured`, customer balance is debited, counterparty is credited, and double-entry entries are posted.
+- **Phase 2b: Void (Cancellation):** If the purchase is cancelled (`POST /holds/{id}/void`), the hold is marked `voided`, instantly releasing the hold and restoring available balance.
 
-### HTTP Status Code Semantics
-- **`201 Created`**: New transaction executed and committed successfully.
-- **`200 OK`**: Replayed idempotent request (contains `Idempotent-Replay: true` header).
-- **`400 Bad Request`**: Malformed JSON, missing idempotency key, invalid amount, transfer to self.
-- **`404 Not Found`**: Target account ID not found.
-- **`409 Conflict`**: Request currently in progress.
-- **`422 Unprocessable Entity`**: Insufficient funds or idempotency key reused with mismatched body.
-- **`500 Internal Server Error`**: Unexpected database failure or reconciliation discrepancy.
+### ⛓️ 2. Cryptographic Tamper-Evident Audit Trail (Hash Chaining)
+To prevent internal fraud or rogue database tampering (e.g. `UPDATE entries SET amount = ...`), every entry is cryptographically linked to its predecessor in a hash chain:
+$$\text{Entry Hash}_n = \text{SHA256}(\text{Entry Hash}_{n-1} \parallel \text{Account ID} \parallel \text{Direction} \parallel \text{Amount})$$
+- The `GET /admin/verify-audit-chain` endpoint traverses the entire ledger and cryptographically verifies every link in the chain. Any manual mutation or deleted record breaks the cryptographic chain and triggers an instant alert.
+
+### 🔄 3. Pure Compensating Reversals (Refunds / Voids)
+- Accounting entries are strictly **append-only**. Rows in `entries` are never updated or deleted.
+- Reversing a transaction (`POST /transfers/{id}/reversals`) automatically generates an inverse double-entry transaction (`kind = 'reversal'`) with `reversal_of_id`:
+  - Every original debit leg becomes a credit leg.
+  - Every original credit leg becomes a debit leg.
+- The reversal locks all accounts involved in deterministic order, verifies balance sufficiency, and commits atomically.
+
+### 💸 4. Multi-Party Split Payments & Fee Dedication
+Supports arbitrary $N$-legged transactions (`POST /transactions`) where money can be routed across multiple stakeholders in a single atomic transaction (e.g. Marketplace Checkout):
+- Buyer debited ₹1,000
+- Merchant credited ₹950
+- Platform fee account credited ₹50
+- Strictly validates that:
+  $$\sum_{i=1}^n \text{Debits}_i = \sum_{j=1}^m \text{Credits}_j$$
+
+### 🌐 5. Cross-Currency Foreign Exchange (FX Engine)
+Transfers between accounts with different currencies (e.g. USD $\rightarrow$ INR) utilize the system counterparty account `FX_SETTLEMENT`:
+- **Leg 1 (Send Currency):** Sender account debited \$100 USD; `FX_SETTLEMENT` credited \$100 USD.
+- **Leg 2 (Receive Currency):** `FX_SETTLEMENT` debited ₹8,300 INR; Receiver account credited ₹8,300 INR.
+- Verifies that within each individual currency, total debits strictly equal total credits.
+
+### 🔒 6. Deterministic Deadlock Prevention
+When transferring funds between accounts, concurrent transfers in opposite directions ($A \rightarrow B$ and $B \rightarrow A$) can cause PostgreSQL deadlocks. This platform prevents deadlocks by sorting all unique account IDs lexicographically and acquiring row-level locks in deterministic order:
+```go
+ids := []uuid.UUID{from, to}
+sort.Slice(ids, func(i, j int) bool { return ids[i].String() < ids[j].String() })
+rows, err := tx.Query(ctx, `SELECT id, balance FROM accounts WHERE id = ANY($1) ORDER BY id FOR UPDATE`, ids)
+```
+
+### ⚡ 7. Idempotency with Request Hashing
+Clients provide an `Idempotency-Key` header with mutation requests. The incoming payload is hashed with SHA-256 and claimed atomically via:
+```sql
+INSERT INTO idempotency_keys (key, request_hash) VALUES ($1, $2)
+ON CONFLICT (key) DO NOTHING;
+```
+- **Same Key + Same Body:** Replays the original response with HTTP 200 and header `Idempotent-Replay: true`.
+- **Same Key + Different Body:** Rejects with HTTP 422 (`ErrKeyReused`).
+- **Concurrent In-Flight:** Blocks on the primary key lock until the first transaction commits, then discovers the conflict and safely replays.
+
+### 📊 8. Prometheus Observability
+Exposes real-time metrics on `/metrics`:
+- `ledger_transactions_total{kind, status}`: Transaction counters.
+- `ledger_transaction_duration_seconds`: High-resolution latency histograms.
+- `ledger_active_holds_count`: Live gauge of outstanding authorization holds.
+- `ledger_reconciliation_status`: Real-time ledger health status (1 = healthy, 0 = discrepancy).
 
 ---
 
-## Quickstart & Demo
+## 3. Database Schema
 
-### 1. Launch with Docker Compose
+```sql
+CREATE TABLE accounts (
+    id         UUID PRIMARY KEY,
+    owner      TEXT NOT NULL,
+    type       TEXT NOT NULL CHECK (type IN ('customer','system')),
+    currency   CHAR(3) NOT NULL DEFAULT 'INR',
+    balance    BIGINT NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CONSTRAINT no_negative CHECK (type = 'system' OR balance >= 0)
+);
 
+CREATE TABLE transactions (
+    id             UUID PRIMARY KEY,
+    kind           TEXT NOT NULL CHECK (kind IN ('deposit','withdrawal','transfer','reversal','split_payment','fx_transfer','hold_capture')),
+    reversal_of_id UUID REFERENCES transactions(id),
+    metadata       JSONB,
+    created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE entries (
+    id             BIGSERIAL PRIMARY KEY,
+    transaction_id UUID NOT NULL REFERENCES transactions(id),
+    account_id     UUID NOT NULL REFERENCES accounts(id),
+    direction      TEXT NOT NULL CHECK (direction IN ('debit','credit')),
+    amount         BIGINT NOT NULL CHECK (amount > 0),
+    prev_hash      TEXT NOT NULL DEFAULT '',
+    entry_hash     TEXT NOT NULL DEFAULT '',
+    created_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX idx_entries_account ON entries(account_id, id DESC);
+
+CREATE TABLE holds (
+    id          UUID PRIMARY KEY,
+    account_id  UUID NOT NULL REFERENCES accounts(id),
+    amount      BIGINT NOT NULL CHECK (amount > 0),
+    status      TEXT NOT NULL CHECK (status IN ('active', 'captured', 'voided')),
+    description TEXT NOT NULL DEFAULT '',
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+    captured_at TIMESTAMPTZ,
+    voided_at   TIMESTAMPTZ
+);
+CREATE INDEX idx_holds_account_active ON holds(account_id) WHERE status = 'active';
+
+CREATE TABLE idempotency_keys (
+    key             TEXT PRIMARY KEY,
+    request_hash    TEXT NOT NULL,
+    transaction_id  UUID REFERENCES transactions(id),
+    response_status INT,
+    response_body   JSONB,
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+```
+
+---
+
+## 4. REST API Reference
+
+| Method | Endpoint | Headers | Description |
+|---|---|---|---|
+| `GET` | `/healthz` | - | Liveness and DB healthcheck |
+| `GET` | `/metrics` | - | Prometheus metrics endpoint |
+| `POST` | `/accounts` | - | Create account (`owner`, `currency`) |
+| `GET` | `/accounts/{id}` | - | Fetch account balance & available balance |
+| `GET` | `/accounts/{id}/entries` | - | Account statement with cursor pagination (`limit`, `before`) |
+| `POST` | `/accounts/{id}/deposits` | `Idempotency-Key` | Deposit cash |
+| `POST` | `/accounts/{id}/withdrawals` | `Idempotency-Key` | Withdraw cash |
+| `POST` | `/transfers` | `Idempotency-Key` | Peer-to-peer transfer (`from`, `to`, `amount`) |
+| `POST` | `/transfers/fx` | `Idempotency-Key` | Cross-currency FX transfer |
+| `POST` | `/transfers/{id}/reversals` | `Idempotency-Key` | Create compensating transaction reversal |
+| `POST` | `/transactions` | `Idempotency-Key` | Multi-party split payments (arbitrary $N$ legs) |
+| `POST` | `/accounts/{id}/holds` | - | Authorize and reserve funds |
+| `POST` | `/holds/{id}/capture` | `Idempotency-Key` | Capture/settle authorized hold |
+| `POST` | `/holds/{id}/void` | - | Cancel/void authorized hold |
+| `GET` | `/admin/reconcile` | - | Global $\sum \text{debits} = \sum \text{credits}$ verification |
+| `GET` | `/admin/verify-audit-chain`| - | Cryptographically verify SHA-256 hash chains |
+
+---
+
+## 5. Quickstart & Verification Walkthrough
+
+### 1. Launch Services
 ```bash
 docker compose up -d --build
 ```
 
-Verify service health:
-```bash
-curl -s http://localhost:8080/healthz
-# {"status":"ok"}
-```
-
-### 2. Walkthrough: Create Accounts, Deposit & Transfer
+### 2. End-to-End Walkthrough via cURL
 
 ```bash
-# 1. Create Alice's account
-ALICE=$(curl -s -X POST http://localhost:8080/accounts \
+# 1. Create Buyer and Merchant accounts
+BUYER=$(curl -s -X POST http://localhost:8080/accounts \
   -H "Content-Type: application/json" \
   -d '{"owner":"Alice","currency":"INR"}' | jq -r .id)
-echo "Alice ID: $ALICE"
 
-# 2. Create Bob's account
-BOB=$(curl -s -X POST http://localhost:8080/accounts \
+MERCHANT=$(curl -s -X POST http://localhost:8080/accounts \
   -H "Content-Type: application/json" \
-  -d '{"owner":"Bob","currency":"INR"}' | jq -r .id)
-echo "Bob ID: $BOB"
+  -d '{"owner":"Bookstore","currency":"INR"}' | jq -r .id)
 
-# 3. Deposit 50,000 paise (₹500.00) into Alice's account
-curl -i -X POST "http://localhost:8080/accounts/$ALICE/deposits" \
+FEE=$(curl -s -X POST http://localhost:8080/accounts \
   -H "Content-Type: application/json" \
-  -H "Idempotency-Key: dep-alice-001" \
-  -d '{"amount": 50000}'
+  -d '{"owner":"PlatformFee","currency":"INR"}' | jq -r .id)
 
-# 4. Transfer 15,000 paise (₹150.00) from Alice to Bob
-curl -i -X POST http://localhost:8080/transfers \
+# 2. Deposit ₹1,000 (100,000 paise)
+curl -s -X POST "http://localhost:8080/accounts/$BUYER/deposits" \
+  -H "Idempotency-Key: dep-101" \
   -H "Content-Type: application/json" \
-  -H "Idempotency-Key: tr-001" \
-  -d "{\"from\": \"$ALICE\", \"to\": \"$BOB\", \"amount\": 15000}"
+  -d '{"amount": 100000}' | jq .
 
-# 5. Idempotent Retry: Repeat the EXACT SAME transfer request
-# Notice the response returns HTTP 200 with 'Idempotent-Replay: true' header
-curl -i -X POST http://localhost:8080/transfers \
+# 3. Two-Phase Authorization: Place a Hold for ₹500 (50,000 paise)
+HOLD_ID=$(curl -s -X POST "http://localhost:8080/accounts/$BUYER/holds" \
   -H "Content-Type: application/json" \
-  -H "Idempotency-Key: tr-001" \
-  -d "{\"from\": \"$ALICE\", \"to\": \"$BOB\", \"amount\": 15000}"
+  -d '{"amount": 50000, "description": "Checkout Authorization"}' | jq -r .id)
 
-# 6. Check Alice's balance (should be 35,000)
-curl -s "http://localhost:8080/accounts/$ALICE" | jq .
+# 4. Check Available Balance (Total: 100,000; Available: 50,000)
+curl -s "http://localhost:8080/accounts/$BUYER" | jq .
 
-# 7. Check Bob's balance (should be 15,000)
-curl -s "http://localhost:8080/accounts/$BOB" | jq .
+# 5. Capture the Hold for ₹450 (settlement)
+curl -s -X POST "http://localhost:8080/holds/$HOLD_ID/capture" \
+  -H "Idempotency-Key: cap-101" \
+  -H "Content-Type: application/json" \
+  -d '{"amount": 45000}' | jq .
 
-# 8. Check Alice's statement entries
-curl -s "http://localhost:8080/accounts/$ALICE/entries?limit=10" | jq .
+# 6. Execute a Split Payment
+curl -s -X POST http://localhost:8080/transactions \
+  -H "Idempotency-Key: split-101" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"kind\": \"split_payment\",
+    \"legs\": [
+      {\"account_id\": \"$BUYER\", \"direction\": \"debit\", \"amount\": 20000},
+      {\"account_id\": \"$MERCHANT\", \"direction\": \"credit\", \"amount\": 19000},
+      {\"account_id\": \"$FEE\", \"direction\": \"credit\", \"amount\": 1000}
+    ]
+  }" | jq .
 
-# 9. Verify global ledger integrity and reconciliation
+# 7. Verify Cryptographic Audit Trail
+curl -s http://localhost:8080/admin/verify-audit-chain | jq .
+
+# 8. Reconcile Balance Invariants
 curl -s http://localhost:8080/admin/reconcile | jq .
+
+# 9. Scrape Prometheus Metrics
+curl -s http://localhost:8080/metrics | grep "ledger_"
 ```
 
 ---
 
-## Testing & Concurrency Verification
-
-### Running Tests
+## 6. Concurrency & Invariants Testing
 
 ```bash
 # Run unit and API tests
 go test -v ./...
 
-# Run with race detector
+# Run PostgreSQL concurrency tests with Race Detector
 go test -v -race ./...
 ```
 
-### Concurrency Test Scenarios (`internal/service/ledger_test.go`)
-1. **`TestConcurrentTransfers`**:
-   - Accounts A and B each start with 100,000.
-   - 100 concurrent goroutines transfer 1,000 alternating directions ($A \rightarrow B$ and $B \rightarrow A$).
-   - Verifies **no deadlocks**, **total balance conserved** ($A + B = 200,000$), no negative balances, and `balance == SUM(entries)`.
-2. **`TestConcurrentIdempotencyRace`**:
-   - 20 goroutines fire concurrently using the **identical idempotency key**.
-   - Exactly **1 execution succeeds** (HTTP 201), the other 19 receive replayed responses (HTTP 200), and sender balance is deducted exactly once.
-3. **`TestConcurrentOverdraftRace`**:
-   - Account has a balance of 1,000.
-   - 50 goroutines concurrently attempt to withdraw 100.
-   - Exactly **10 succeed**, **40 fail** with `ErrInsufficientFunds`, and final balance is strictly 0.
+The test suite systematically verifies:
+- **Deadlock Immunity:** 100 goroutines executing cross transfers concurrently.
+- **Idempotency Race:** 20 identical requests hitting the API at the exact same instant; exactly 1 executes, 19 replay cleanly.
+- **Overdraft Immunity:** 50 concurrent withdrawal attempts against a balance of 1,000; exactly 10 succeed, 40 fail with `ErrInsufficientFunds`.
+- **Conservation of Value:** $\sum \text{Debits} = \sum \text{Credits}$ verified after all concurrency runs.
 
 ---
 

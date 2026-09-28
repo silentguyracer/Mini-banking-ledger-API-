@@ -21,6 +21,13 @@ type Store interface {
 	Deposit(ctx context.Context, key, reqHash string, accountID uuid.UUID, amount int64) (*domain.Result, error)
 	Withdraw(ctx context.Context, key, reqHash string, accountID uuid.UUID, amount int64) (*domain.Result, error)
 	Transfer(ctx context.Context, key, reqHash string, from, to uuid.UUID, amount int64) (*domain.Result, error)
+	CreateHold(ctx context.Context, accountID uuid.UUID, amount int64, description string) (*domain.Hold, error)
+	CaptureHold(ctx context.Context, key, reqHash string, holdID uuid.UUID, captureAmount int64) (*domain.Result, error)
+	VoidHold(ctx context.Context, holdID uuid.UUID) (*domain.Hold, error)
+	ReverseTransaction(ctx context.Context, key, reqHash string, transactionID uuid.UUID) (*domain.Result, error)
+	SplitPayment(ctx context.Context, key, reqHash string, kind string, legs []domain.Leg) (*domain.Result, error)
+	TransferFX(ctx context.Context, key, reqHash string, from, to uuid.UUID, sendAmount, receiveAmount int64) (*domain.Result, error)
+	VerifyAuditChain(ctx context.Context) (*domain.AuditVerificationReport, error)
 	SumEntries(ctx context.Context, accountID uuid.UUID) (int64, error)
 	Reconcile(ctx context.Context) (*store.ReconciliationReport, error)
 }
@@ -69,11 +76,18 @@ func (s *LedgerService) Balance(ctx context.Context, id uuid.UUID) (int64, error
 	return acc.Balance, nil
 }
 
+func (s *LedgerService) AvailableBalance(ctx context.Context, id uuid.UUID) (int64, error) {
+	acc, err := s.GetAccount(ctx, id)
+	if err != nil {
+		return 0, err
+	}
+	return acc.AvailableBalance, nil
+}
+
 func (s *LedgerService) GetEntries(ctx context.Context, accountID uuid.UUID, before int64, limit int) ([]domain.Entry, error) {
 	if accountID == uuid.Nil {
 		return nil, domain.ErrAccountNotFound
 	}
-	// Verify account exists
 	if _, err := s.store.GetAccount(ctx, accountID); err != nil {
 		return nil, err
 	}
@@ -129,6 +143,123 @@ func (s *LedgerService) Transfer(ctx context.Context, key string, rawBody []byte
 
 	reqHash := computeHash(rawBody, map[string]any{"from": from, "to": to, "amount": amount})
 	return s.store.Transfer(ctx, key, reqHash, from, to, amount)
+}
+
+// CreateHold authorizes and reserves funds
+func (s *LedgerService) CreateHold(ctx context.Context, accountID uuid.UUID, amount int64, description string) (*domain.Hold, error) {
+	if accountID == uuid.Nil {
+		return nil, domain.ErrAccountNotFound
+	}
+	if amount <= 0 {
+		return nil, domain.ErrInvalidAmount
+	}
+	return s.store.CreateHold(ctx, accountID, amount, description)
+}
+
+// CaptureHold commits a reserved hold into settled ledger entries
+func (s *LedgerService) CaptureHold(ctx context.Context, key string, rawBody []byte, holdID uuid.UUID, captureAmount int64) (*domain.Result, error) {
+	key = strings.TrimSpace(key)
+	if key == "" {
+		return nil, domain.ErrMissingIdempotencyKey
+	}
+	if holdID == uuid.Nil {
+		return nil, domain.ErrHoldNotFound
+	}
+	if captureAmount <= 0 {
+		return nil, domain.ErrInvalidAmount
+	}
+
+	reqHash := computeHash(rawBody, map[string]any{"hold_id": holdID, "amount": captureAmount})
+	return s.store.CaptureHold(ctx, key, reqHash, holdID, captureAmount)
+}
+
+// VoidHold cancels a reserved hold
+func (s *LedgerService) VoidHold(ctx context.Context, holdID uuid.UUID) (*domain.Hold, error) {
+	if holdID == uuid.Nil {
+		return nil, domain.ErrHoldNotFound
+	}
+	return s.store.VoidHold(ctx, holdID)
+}
+
+// ReverseTransaction issues compensating entries for an existing transaction
+func (s *LedgerService) ReverseTransaction(ctx context.Context, key string, rawBody []byte, transactionID uuid.UUID) (*domain.Result, error) {
+	key = strings.TrimSpace(key)
+	if key == "" {
+		return nil, domain.ErrMissingIdempotencyKey
+	}
+	if transactionID == uuid.Nil {
+		return nil, fmt.Errorf("%w: invalid transaction id", domain.ErrInvalidInput)
+	}
+
+	reqHash := computeHash(rawBody, map[string]any{"transaction_id": transactionID})
+	return s.store.ReverseTransaction(ctx, key, reqHash, transactionID)
+}
+
+// SplitPayment executes multi-party split payments atomically
+func (s *LedgerService) SplitPayment(ctx context.Context, key string, rawBody []byte, kind string, legs []domain.Leg) (*domain.Result, error) {
+	key = strings.TrimSpace(key)
+	if key == "" {
+		return nil, domain.ErrMissingIdempotencyKey
+	}
+	if len(legs) < 2 {
+		return nil, fmt.Errorf("%w: at least 2 legs required", domain.ErrInvalidInput)
+	}
+	if kind == "" {
+		kind = domain.TxKindSplitPayment
+	}
+
+	var debits, credits int64
+	for _, leg := range legs {
+		if leg.Amount <= 0 {
+			return nil, domain.ErrInvalidAmount
+		}
+		if leg.AccountID == uuid.Nil {
+			return nil, domain.ErrAccountNotFound
+		}
+		if leg.Direction == domain.DirectionDebit {
+			debits += leg.Amount
+		} else if leg.Direction == domain.DirectionCredit {
+			credits += leg.Amount
+		} else {
+			return nil, fmt.Errorf("%w: invalid direction %s", domain.ErrInvalidInput, leg.Direction)
+		}
+	}
+
+	if debits != credits {
+		return nil, domain.ErrDoubleEntryImbalance
+	}
+
+	reqHash := computeHash(rawBody, map[string]any{"kind": kind, "legs": legs})
+	return s.store.SplitPayment(ctx, key, reqHash, kind, legs)
+}
+
+// TransferFX transfers between different currencies
+func (s *LedgerService) TransferFX(ctx context.Context, key string, rawBody []byte, from, to uuid.UUID, sendAmount, receiveAmount int64) (*domain.Result, error) {
+	key = strings.TrimSpace(key)
+	if key == "" {
+		return nil, domain.ErrMissingIdempotencyKey
+	}
+	if from == to {
+		return nil, domain.ErrSameAccount
+	}
+	if sendAmount <= 0 || receiveAmount <= 0 {
+		return nil, domain.ErrInvalidAmount
+	}
+	if from == uuid.Nil || to == uuid.Nil {
+		return nil, domain.ErrAccountNotFound
+	}
+
+	reqHash := computeHash(rawBody, map[string]any{
+		"from":           from,
+		"to":             to,
+		"send_amount":    sendAmount,
+		"receive_amount": receiveAmount,
+	})
+	return s.store.TransferFX(ctx, key, reqHash, from, to, sendAmount, receiveAmount)
+}
+
+func (s *LedgerService) VerifyAuditChain(ctx context.Context) (*domain.AuditVerificationReport, error) {
+	return s.store.VerifyAuditChain(ctx)
 }
 
 func (s *LedgerService) SumEntries(ctx context.Context, accountID uuid.UUID) (int64, error) {

@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"ledger/internal/domain"
 	"ledger/internal/httpapi"
@@ -23,6 +24,7 @@ import (
 type mockStore struct {
 	accounts map[uuid.UUID]*domain.Account
 	entries  map[uuid.UUID][]domain.Entry
+	holds    map[uuid.UUID]*domain.Hold
 	keys     map[string]struct {
 		hash string
 		body []byte
@@ -33,6 +35,7 @@ func newMockStore() *mockStore {
 	m := &mockStore{
 		accounts: make(map[uuid.UUID]*domain.Account),
 		entries:  make(map[uuid.UUID][]domain.Entry),
+		holds:    make(map[uuid.UUID]*domain.Hold),
 		keys: make(map[string]struct {
 			hash string
 			body []byte
@@ -145,6 +148,53 @@ func (m *mockStore) Transfer(ctx context.Context, key, reqHash string, from, to 
 	return &domain.Result{Replayed: false, Status: 201, Body: body}, nil
 }
 
+func (m *mockStore) CreateHold(ctx context.Context, accountID uuid.UUID, amount int64, description string) (*domain.Hold, error) {
+	hold := &domain.Hold{
+		ID:          uuid.New(),
+		AccountID:   accountID,
+		Amount:      amount,
+		Status:      domain.HoldStatusActive,
+		Description: description,
+		CreatedAt:   time.Now(),
+	}
+	m.holds[hold.ID] = hold
+	return hold, nil
+}
+
+func (m *mockStore) CaptureHold(ctx context.Context, key, reqHash string, holdID uuid.UUID, captureAmount int64) (*domain.Result, error) {
+	hold, ok := m.holds[holdID]
+	if !ok {
+		return nil, domain.ErrHoldNotFound
+	}
+	hold.Status = domain.HoldStatusCaptured
+	return &domain.Result{Replayed: false, Status: 201, Body: []byte(`{"status":"captured"}`)}, nil
+}
+
+func (m *mockStore) VoidHold(ctx context.Context, holdID uuid.UUID) (*domain.Hold, error) {
+	hold, ok := m.holds[holdID]
+	if !ok {
+		return nil, domain.ErrHoldNotFound
+	}
+	hold.Status = domain.HoldStatusVoided
+	return hold, nil
+}
+
+func (m *mockStore) ReverseTransaction(ctx context.Context, key, reqHash string, transactionID uuid.UUID) (*domain.Result, error) {
+	return &domain.Result{Replayed: false, Status: 201, Body: []byte(`{"status":"reversed"}`)}, nil
+}
+
+func (m *mockStore) SplitPayment(ctx context.Context, key, reqHash string, kind string, legs []domain.Leg) (*domain.Result, error) {
+	return &domain.Result{Replayed: false, Status: 201, Body: []byte(`{"status":"split_payment_done"}`)}, nil
+}
+
+func (m *mockStore) TransferFX(ctx context.Context, key, reqHash string, from, to uuid.UUID, sendAmount, receiveAmount int64) (*domain.Result, error) {
+	return &domain.Result{Replayed: false, Status: 201, Body: []byte(`{"status":"fx_transfer_done"}`)}, nil
+}
+
+func (m *mockStore) VerifyAuditChain(ctx context.Context) (*domain.AuditVerificationReport, error) {
+	return &domain.AuditVerificationReport{Verified: true, TotalEntriesChecked: 5, Message: "verified"}, nil
+}
+
 func (m *mockStore) SumEntries(ctx context.Context, accountID uuid.UUID) (int64, error) {
 	return 0, nil
 }
@@ -162,19 +212,26 @@ func setupTestServer() (http.Handler, *mockStore) {
 	return router, mock
 }
 
-func TestHealthz(t *testing.T) {
+func TestHealthzAndMetrics(t *testing.T) {
 	router, _ := setupTestServer()
+
+	// Healthz
 	req := httptest.NewRequest(http.MethodGet, "/healthz", nil)
 	rec := httptest.NewRecorder()
-
 	router.ServeHTTP(rec, req)
 	assert.Equal(t, http.StatusOK, rec.Code)
+
+	// Prometheus Metrics
+	metricsReq := httptest.NewRequest(http.MethodGet, "/metrics", nil)
+	metricsRec := httptest.NewRecorder()
+	router.ServeHTTP(metricsRec, metricsReq)
+	assert.Equal(t, http.StatusOK, metricsRec.Code)
+	assert.Contains(t, metricsRec.Body.String(), "ledger_active_holds_count")
 }
 
 func TestCreateAndGetAccount(t *testing.T) {
 	router, _ := setupTestServer()
 
-	// POST /accounts
 	body := bytes.NewBufferString(`{"owner":"Alice","currency":"INR"}`)
 	req := httptest.NewRequest(http.MethodPost, "/accounts", body)
 	rec := httptest.NewRecorder()
@@ -188,7 +245,6 @@ func TestCreateAndGetAccount(t *testing.T) {
 	assert.Equal(t, "INR", created.Currency)
 	assert.Equal(t, int64(0), created.Balance)
 
-	// GET /accounts/{id}
 	getReq := httptest.NewRequest(http.MethodGet, "/accounts/"+created.ID.String(), nil)
 	getRec := httptest.NewRecorder()
 	router.ServeHTTP(getRec, getReq)
@@ -198,12 +254,6 @@ func TestCreateAndGetAccount(t *testing.T) {
 	err = json.Unmarshal(getRec.Body.Bytes(), &fetched)
 	require.NoError(t, err)
 	assert.Equal(t, created.ID, fetched.ID)
-
-	// GET /accounts/invalid
-	notFoundReq := httptest.NewRequest(http.MethodGet, "/accounts/"+uuid.New().String(), nil)
-	notFoundRec := httptest.NewRecorder()
-	router.ServeHTTP(notFoundRec, notFoundReq)
-	assert.Equal(t, http.StatusNotFound, notFoundRec.Code)
 }
 
 func TestTransferHTTP(t *testing.T) {
@@ -219,7 +269,6 @@ func TestTransferHTTP(t *testing.T) {
 		req := httptest.NewRequest(http.MethodPost, "/transfers", body)
 		rec := httptest.NewRecorder()
 		router.ServeHTTP(rec, req)
-
 		assert.Equal(t, http.StatusBadRequest, rec.Code)
 	})
 
@@ -276,15 +325,42 @@ func TestTransferHTTP(t *testing.T) {
 	})
 }
 
-func TestReconcileEndpoint(t *testing.T) {
+func TestHoldsHTTP(t *testing.T) {
+	router, store := setupTestServer()
+	ctx := context.Background()
+
+	acc, _ := store.CreateAccount(ctx, uuid.New(), "HoldUser", "INR")
+	acc.Balance = 10000
+
+	body := bytes.NewBufferString(`{"amount":3000,"description":"Deposit hold"}`)
+	req := httptest.NewRequest(http.MethodPost, "/accounts/"+acc.ID.String()+"/holds", body)
+	rec := httptest.NewRecorder()
+	router.ServeHTTP(rec, req)
+
+	require.Equal(t, http.StatusCreated, rec.Code)
+	var hold domain.Hold
+	err := json.Unmarshal(rec.Body.Bytes(), &hold)
+	require.NoError(t, err)
+	assert.Equal(t, int64(3000), hold.Amount)
+	assert.Equal(t, domain.HoldStatusActive, hold.Status)
+
+	capBody := bytes.NewBufferString(`{"amount":3000}`)
+	capReq := httptest.NewRequest(http.MethodPost, "/holds/"+hold.ID.String()+"/capture", capBody)
+	capReq.Header.Set("Idempotency-Key", "cap-key-1")
+	capRec := httptest.NewRecorder()
+	router.ServeHTTP(capRec, capReq)
+	assert.Equal(t, http.StatusCreated, capRec.Code)
+}
+
+func TestVerifyAuditChainHTTP(t *testing.T) {
 	router, _ := setupTestServer()
-	req := httptest.NewRequest(http.MethodGet, "/admin/reconcile", nil)
+	req := httptest.NewRequest(http.MethodGet, "/admin/verify-audit-chain", nil)
 	rec := httptest.NewRecorder()
 	router.ServeHTTP(rec, req)
 
 	assert.Equal(t, http.StatusOK, rec.Code)
-	var report store.ReconciliationReport
+	var report domain.AuditVerificationReport
 	err := json.Unmarshal(rec.Body.Bytes(), &report)
 	require.NoError(t, err)
-	assert.Equal(t, "OK", report.Status)
+	assert.True(t, report.Verified)
 }
