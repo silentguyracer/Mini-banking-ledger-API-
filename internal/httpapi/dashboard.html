@@ -43,7 +43,7 @@
     #selection-drawer {
       position: fixed;
       inset: 0;
-      background: rgba(20, 28, 61, 0.96);
+      background: rgba(20, 28, 61, 0.97);
       backdrop-filter: blur(16px);
       z-index: 1000;
       display: none;
@@ -76,6 +76,9 @@
       text-transform: uppercase;
       letter-spacing: 1px;
     }
+    .drawer-close:hover {
+      background: rgba(255,255,255,0.1);
+    }
     .drawer-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -98,52 +101,40 @@
       justify-content: space-between;
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      position: relative;
-      overflow: hidden;
     }
     .selection-card:hover {
       transform: translateY(-8px);
       border-color: var(--gold);
       box-shadow: 0 20px 40px rgba(0,0,0,0.4);
     }
-    .selection-card::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(circle at 80% 20%, rgba(212, 175, 55, 0.15), transparent 70%);
-      pointer-events: none;
-    }
     .card-num {
       font-family: var(--font-display);
-      font-size: 36px;
-      font-style: italic;
+      font-size: 32px;
       color: var(--gold);
-      margin-bottom: 12px;
+      margin-bottom: 16px;
     }
     .card-title {
       font-family: var(--font-display);
-      font-size: 24px;
+      font-size: 22px;
       font-weight: 600;
-      line-height: 1.2;
       color: var(--white);
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
     .card-desc {
-      font-size: 13px;
-      color: var(--text-light);
+      font-size: 14px;
       line-height: 1.6;
-      opacity: 0.85;
+      color: #94A3B8;
+      margin-bottom: 24px;
     }
     .card-action {
       font-size: 12px;
-      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 1.5px;
       color: var(--gold);
-      margin-top: 24px;
+      font-weight: 700;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
 
     /* Site Navigation (Realevate Style) */
@@ -151,33 +142,59 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 28px 48px;
+      padding: 24px 48px;
       border-bottom: 1px solid var(--border-light);
+      position: sticky;
+      top: 0;
+      background: rgba(31, 43, 94, 0.92);
+      backdrop-filter: blur(12px);
+      z-index: 100;
     }
     .logo-text {
       font-family: var(--font-display);
       font-size: 24px;
-      letter-spacing: 2px;
-      text-transform: uppercase;
       font-weight: 700;
+      letter-spacing: 2px;
       color: var(--white);
       text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .logo-text::after {
+      content: "";
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--gold);
     }
     .nav-links {
       display: flex;
+      gap: 20px;
       align-items: center;
-      gap: 32px;
     }
     .nav-link {
-      color: var(--text-light);
+      color: #CBD5E1;
       text-decoration: none;
       font-size: 13px;
-      font-weight: 500;
       text-transform: uppercase;
       letter-spacing: 1px;
+      font-weight: 600;
       transition: color 0.2s;
     }
     .nav-link:hover { color: var(--gold); }
+    .nav-link.gold-btn {
+      color: var(--brand-navy-dark);
+      background: var(--gold);
+      padding: 8px 16px;
+      border-radius: 9999px;
+      font-weight: 700;
+    }
+    .nav-link.gold-btn:hover {
+      background: #e6c55d;
+      color: var(--brand-navy-dark);
+    }
     .btn-selection {
       background: var(--white);
       color: var(--brand-navy);
@@ -189,14 +206,14 @@
       letter-spacing: 1px;
       border: none;
       cursor: pointer;
-      display: inline-flex;
+      display: flex;
       align-items: center;
       gap: 8px;
       transition: all 0.2s;
     }
     .btn-selection:hover {
       background: var(--gold-light);
-      transform: scale(1.02);
+      transform: translateY(-1px);
     }
 
     /* Hero Section (Realevate Iconic Editorial Style) */
@@ -254,11 +271,12 @@
       display: flex;
       gap: 16px;
       align-items: center;
+      flex-wrap: wrap;
     }
     .btn-gold {
       background: var(--gold);
       color: var(--brand-navy-dark);
-      padding: 16px 34px;
+      padding: 15px 30px;
       border-radius: 9999px;
       font-weight: 700;
       font-size: 13px;
@@ -267,11 +285,31 @@
       border: none;
       cursor: pointer;
       transition: all 0.25s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
     .btn-gold:hover {
       background: #e6c55d;
       transform: translateY(-2px);
       box-shadow: 0 10px 25px rgba(212, 175, 55, 0.3);
+    }
+    .btn-outline-gold {
+      background: transparent;
+      border: 1px solid var(--gold);
+      color: var(--gold-light);
+      padding: 14px 28px;
+      border-radius: 9999px;
+      font-weight: 700;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.25s;
+    }
+    .btn-outline-gold:hover {
+      background: rgba(212, 175, 55, 0.15);
+      transform: translateY(-2px);
     }
     .btn-text-link {
       background: transparent;
@@ -322,26 +360,24 @@
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 1px;
-      color: var(--text-muted);
+      color: #94A3B8;
       margin-bottom: 6px;
     }
     .v-val {
-      font-size: 18px;
-      font-weight: 700;
+      font-size: 14px;
+      font-weight: 600;
       color: var(--white);
     }
-    .v-val.highlight {
-      color: var(--gold);
-    }
+    .v-val.highlight { color: #34D399; }
 
     /* Marquee Banner (Realevate Signature) */
     .marquee-bar {
       border-top: 1px solid var(--border-light);
       border-bottom: 1px solid var(--border-light);
-      padding: 16px 0;
+      background: rgba(20, 28, 61, 0.6);
+      padding: 18px 0;
       overflow: hidden;
       white-space: nowrap;
-      background: rgba(15, 23, 56, 0.4);
     }
     .marquee-track {
       display: inline-block;
@@ -372,10 +408,12 @@
       margin: 0 auto;
     }
     .section-head {
-      margin-bottom: 48px;
+      margin-bottom: 32px;
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
+      flex-wrap: wrap;
+      gap: 20px;
     }
     .section-subtitle {
       font-size: 12px;
@@ -383,7 +421,7 @@
       letter-spacing: 2px;
       color: var(--brand-navy);
       font-weight: 700;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
     }
     .section-title {
       font-family: var(--font-display);
@@ -392,12 +430,82 @@
       color: var(--brand-navy);
     }
 
+    /* Studio Action Mode Tabs */
+    .studio-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      background: var(--surface);
+      padding: 8px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+    }
+    .tab-btn {
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--brand-navy);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tab-btn:hover {
+      background: rgba(31, 43, 94, 0.06);
+    }
+    .tab-btn.active {
+      background: var(--brand-navy);
+      color: var(--white);
+      box-shadow: 0 4px 12px rgba(31, 43, 94, 0.2);
+    }
+    .tab-btn.deposit-tab.active {
+      background: #0f172a;
+      border: 1px solid var(--gold);
+      color: var(--gold-light);
+    }
+    .tab-panel {
+      display: none;
+    }
+    .tab-panel.active {
+      display: block;
+    }
+
+    /* Preset Amount Chips */
+    .preset-chips {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+    .chip-btn {
+      background: var(--white);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--brand-navy);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .chip-btn:hover {
+      background: var(--brand-navy);
+      color: var(--white);
+      border-color: var(--brand-navy);
+    }
+
     /* Live Studio Interactive Workspace */
     .studio-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 40px;
-      margin-bottom: 60px;
+      gap: 36px;
+      margin-bottom: 50px;
     }
     @media (max-width: 900px) {
       .studio-grid { grid-template-columns: 1fr; }
@@ -406,14 +514,14 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 20px;
-      padding: 36px;
+      padding: 32px;
     }
     .card-light-title {
       font-family: var(--font-display);
       font-size: 20px;
       font-weight: 600;
       color: var(--brand-navy);
-      margin-bottom: 20px;
+      margin-bottom: 18px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -423,7 +531,7 @@
     }
     .form-group label {
       display: block;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 1px;
@@ -432,11 +540,11 @@
     }
     .form-control {
       width: 100%;
-      padding: 14px 18px;
+      padding: 13px 16px;
       background: var(--white);
       border: 1px solid var(--border);
       border-radius: 12px;
-      font-size: 15px;
+      font-size: 14px;
       color: var(--text-dark);
       font-family: var(--font-sans);
       outline: none;
@@ -464,6 +572,16 @@
       background: var(--brand-navy-light);
       transform: translateY(-1px);
     }
+    .info-badge-box {
+      background: #EFF6FF;
+      border: 1px solid #BFDBFE;
+      color: #1E40AF;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-size: 12px;
+      line-height: 1.5;
+      margin-bottom: 18px;
+    }
 
     /* Accounts Pill List */
     .acc-item {
@@ -471,11 +589,12 @@
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 18px 20px;
-      margin-bottom: 12px;
+      margin-bottom: 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       transition: transform 0.2s;
+      gap: 16px;
     }
     .acc-item:hover {
       transform: translateX(4px);
@@ -492,8 +611,30 @@
       font-family: var(--font-mono);
       margin-top: 2px;
     }
+    .quick-action-row {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .btn-mini-gold {
+      background: #FFFBEB;
+      border: 1px solid var(--gold);
+      color: #92400E;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-mini-gold:hover {
+      background: var(--gold);
+      color: var(--brand-navy-dark);
+    }
     .acc-money {
       text-align: right;
+      min-width: 140px;
     }
     .acc-total {
       font-size: 18px;
@@ -504,6 +645,7 @@
       font-size: 12px;
       color: var(--success);
       font-weight: 600;
+      margin-top: 2px;
     }
 
     /* Journal Entries Table */
@@ -603,22 +745,22 @@
     </div>
 
     <div class="drawer-grid">
-      <div class="selection-card" onclick="selectAction('transfer')">
-        <div>
-          <div class="card-num">01</div>
-          <div class="card-title">Peer-to-Peer Transfer</div>
-          <div class="card-desc">Deterministic row locking preventing deadlocks in concurrent reverse payments.</div>
-        </div>
-        <div class="card-action">Open Module &rarr;</div>
-      </div>
-
       <div class="selection-card" onclick="selectAction('deposit')">
         <div>
-          <div class="card-num">02</div>
-          <div class="card-title">Double-Entry Vault</div>
-          <div class="card-desc">Zero-sum balance where customer deposits strictly credit the account and debit System CASH.</div>
+          <div class="card-num">01</div>
+          <div class="card-title">Liquidity Deposit Vault</div>
+          <div class="card-desc">Zero-sum balance ingestion where customer deposits credit the account and debit System CASH counterparty.</div>
         </div>
-        <div class="card-action">Open Module &rarr;</div>
+        <div class="card-action">Open Deposit Section &rarr;</div>
+      </div>
+
+      <div class="selection-card" onclick="selectAction('transfer')">
+        <div>
+          <div class="card-num">02</div>
+          <div class="card-title">Peer-to-Peer Transfer</div>
+          <div class="card-desc">Deterministic row locking preventing deadlocks in high-concurrency cross payments.</div>
+        </div>
+        <div class="card-action">Open Transfer Section &rarr;</div>
       </div>
 
       <div class="selection-card" onclick="selectAction('hold')">
@@ -627,7 +769,7 @@
           <div class="card-title">Two-Phase Holds</div>
           <div class="card-desc">Reserve pre-authorizations for hotel and card payments ring-fencing available liquidity.</div>
         </div>
-        <div class="card-action">Open Module &rarr;</div>
+        <div class="card-action">Open Pre-Auth Hold &rarr;</div>
       </div>
 
       <div class="selection-card" onclick="selectAction('audit')">
@@ -636,7 +778,7 @@
           <div class="card-title">Cryptographic Seal</div>
           <div class="card-desc">Mathematical SHA-256 hash chaining guaranteeing historical records remain untampered.</div>
         </div>
-        <div class="card-action">Open Module &rarr;</div>
+        <div class="card-action">Open Audit Chain &rarr;</div>
       </div>
     </div>
   </div>
@@ -645,8 +787,9 @@
   <nav class="site-nav">
     <a href="/" class="logo-text">APEXLEDGER</a>
     <div class="nav-links">
-      <a href="#principles" class="nav-link">Principles</a>
-      <a href="#studio" class="nav-link">Live Studio</a>
+      <a href="#studio" onclick="switchStudioTab('deposit')" class="nav-link gold-btn">💰 Deposit Liquidity</a>
+      <a href="#studio" onclick="switchStudioTab('transfer')" class="nav-link">💸 P2P Transfer</a>
+      <a href="#studio" onclick="switchStudioTab('hold')" class="nav-link">🏨 Holds</a>
       <a href="/admin/reconcile" target="_blank" class="nav-link">Zero-Sum Audit</a>
       <a href="/metrics" target="_blank" class="nav-link">Prometheus</a>
       <button class="btn-selection" onclick="toggleDrawer()">
@@ -672,8 +815,11 @@
         An immutable, double-entry financial platform engineered for high-concurrency correctness, deterministic lock ordering, two-phase authorization holds, and cryptographic SHA-256 audit trails.
       </p>
       <div class="hero-actions">
-        <button class="btn-gold" onclick="document.getElementById('studio').scrollIntoView({behavior:'smooth'})">
-          Explore Live Studio
+        <button class="btn-gold" onclick="switchStudioTab('deposit'); document.getElementById('studio').scrollIntoView({behavior:'smooth'})">
+          💰 Deposit Funds
+        </button>
+        <button class="btn-outline-gold" onclick="switchStudioTab('transfer'); document.getElementById('studio').scrollIntoView({behavior:'smooth'})">
+          💸 P2P Transfer
         </button>
         <button class="btn-text-link" onclick="runAutomatedDemo()">
           <span>&#9654; Run 1-Click Showcase</span>
@@ -702,15 +848,15 @@
   <div class="marquee-bar">
     <div class="marquee-track">
       <div class="marquee-item"><span>&bull;</span> Pure Double-Entry Accounting</div>
+      <div class="marquee-item"><span>&bull;</span> Direct Liquidity Ingestion (CASH Counterparty)</div>
       <div class="marquee-item"><span>&bull;</span> Strict Minor Unit Arithmetic</div>
       <div class="marquee-item"><span>&bull;</span> Deterministic Deadlock Prevention</div>
       <div class="marquee-item"><span>&bull;</span> Two-Phase Authorization Holds</div>
       <div class="marquee-item"><span>&bull;</span> Cryptographic Tamper-Proof Trail</div>
       <div class="marquee-item"><span>&bull;</span> Pure Double-Entry Accounting</div>
+      <div class="marquee-item"><span>&bull;</span> Direct Liquidity Ingestion (CASH Counterparty)</div>
       <div class="marquee-item"><span>&bull;</span> Strict Minor Unit Arithmetic</div>
       <div class="marquee-item"><span>&bull;</span> Deterministic Deadlock Prevention</div>
-      <div class="marquee-item"><span>&bull;</span> Two-Phase Authorization Holds</div>
-      <div class="marquee-item"><span>&bull;</span> Cryptographic Tamper-Proof Trail</div>
     </div>
   </div>
 
@@ -727,41 +873,160 @@
         </button>
       </div>
 
+      <!-- Action Mode Tabs (Prominent Navigation Across All Operations) -->
+      <div class="studio-tabs" id="studio-tabs">
+        <button class="tab-btn deposit-tab active" id="tab-btn-deposit" onclick="switchStudioTab('deposit')">
+          <span>💰 Deposit Funds</span>
+        </button>
+        <button class="tab-btn" id="tab-btn-transfer" onclick="switchStudioTab('transfer')">
+          <span>💸 P2P Transfer</span>
+        </button>
+        <button class="tab-btn" id="tab-btn-hold" onclick="switchStudioTab('hold')">
+          <span>🏨 Two-Phase Hold</span>
+        </button>
+        <button class="tab-btn" id="tab-btn-create" onclick="switchStudioTab('create')">
+          <span>➕ Open Account</span>
+        </button>
+        <button class="tab-btn" id="tab-btn-audit" onclick="switchStudioTab('audit')">
+          <span>🛡️ Cryptographic Audit</span>
+        </button>
+      </div>
+
       <!-- Studio Grid Split -->
       <div class="studio-grid">
-        <!-- Left: Action Console -->
+        <!-- Left Column: Dynamic Action Console -->
         <div class="card-light">
-          <div class="card-light-title">
-            <span id="studioTitle">Send Peer-to-Peer Transfer</span>
-            <span style="font-size:12px; color:var(--text-muted); font-family:var(--font-sans);">Idempotency ON</span>
+
+          <!-- 1. DEPOSIT SECTION (Visible By Default) -->
+          <div id="panel-deposit" class="tab-panel active">
+            <div class="card-light-title">
+              <span>💰 Deposit Liquidity (CASH Ingestion)</span>
+              <span style="font-size:12px; color:var(--success); font-weight:700;">Double-Entry Ingestion</span>
+            </div>
+            <div class="info-badge-box">
+              <strong>Accounting Rule:</strong> Credits the customer account and debits the counterparty System <code>CASH (00000000-0000-0000-0000-000000000001)</code>. Strict non-negative integer paise.
+            </div>
+            <div class="form-group">
+              <label>Target Account (Deposit Destination)</label>
+              <select id="depAccount" class="form-control"></select>
+            </div>
+            <div class="form-group">
+              <label>Deposit Amount in Rupees (₹)</label>
+              <input type="number" id="depAmount" class="form-control" value="1000" min="1" step="1">
+              <div class="preset-chips">
+                <button type="button" class="chip-btn" onclick="setDepositAmount(500)">+ ₹500</button>
+                <button type="button" class="chip-btn" onclick="setDepositAmount(1000)">+ ₹1,000</button>
+                <button type="button" class="chip-btn" onclick="setDepositAmount(5000)">+ ₹5,000</button>
+                <button type="button" class="chip-btn" onclick="setDepositAmount(25000)">+ ₹25,000</button>
+                <button type="button" class="chip-btn" onclick="setDepositAmount(100000)">+ ₹1,00,000</button>
+              </div>
+            </div>
+            <button class="btn-navy" style="background:#0F172A; border:1px solid var(--gold); color:var(--gold-light);" onclick="executeDepositAction()">
+              Deposit Liquidity into Account &rarr;
+            </button>
           </div>
 
-          <div class="form-group">
-            <label>Sender Account (From)</label>
-            <select id="studioFrom" class="form-control" onchange="updateAvailHint()"></select>
-            <div id="availHint" style="font-size:12px; color:var(--success); margin-top:4px; font-weight:600;"></div>
+          <!-- 2. P2P TRANSFER SECTION -->
+          <div id="panel-transfer" class="tab-panel">
+            <div class="card-light-title">
+              <span>💸 Peer-to-Peer Transfer</span>
+              <span style="font-size:12px; color:var(--text-muted); font-family:var(--font-sans);">Idempotency ON</span>
+            </div>
+            <div class="form-group">
+              <label>Sender Account (From)</label>
+              <select id="studioFrom" class="form-control" onchange="updateAvailHint()"></select>
+              <div id="availHint" style="font-size:12px; color:var(--success); margin-top:4px; font-weight:600;"></div>
+            </div>
+            <div class="form-group">
+              <label>Recipient Account (To)</label>
+              <select id="studioTo" class="form-control"></select>
+            </div>
+            <div class="form-group">
+              <label>Amount in Rupees (₹)</label>
+              <input type="number" id="studioAmount" class="form-control" value="250" min="1" step="1">
+              <div class="preset-chips">
+                <button type="button" class="chip-btn" onclick="setTransferAmount(100)">₹100</button>
+                <button type="button" class="chip-btn" onclick="setTransferAmount(250)">₹250</button>
+                <button type="button" class="chip-btn" onclick="setTransferAmount(500)">₹500</button>
+                <button type="button" class="chip-btn" onclick="setTransferAmount(1000)">₹1,000</button>
+              </div>
+            </div>
+            <button class="btn-navy" onclick="executeTransferAction()">
+              Execute Safe Transfer &rarr;
+            </button>
           </div>
 
-          <div class="form-group">
-            <label>Recipient Account (To)</label>
-            <select id="studioTo" class="form-control"></select>
+          <!-- 3. TWO-PHASE HOLD SECTION -->
+          <div id="panel-hold" class="tab-panel">
+            <div class="card-light-title">
+              <span>🏨 Two-Phase Authorization Hold</span>
+              <span style="font-size:12px; color:var(--brand-navy); font-weight:700;">Ring-Fence</span>
+            </div>
+            <div class="info-badge-box">
+              <strong>Two-Phase Commit:</strong> Ring-fences available balance immediately (preventing double-spend) without moving settled ledger funds until captured or voided.
+            </div>
+            <div class="form-group">
+              <label>Customer Account</label>
+              <select id="holdAccount" class="form-control"></select>
+            </div>
+            <div class="form-group">
+              <label>Hold Reserve Amount (₹)</label>
+              <input type="number" id="holdAmount" class="form-control" value="300" min="1">
+            </div>
+            <div class="form-group">
+              <label>Purpose / Merchant Ref</label>
+              <input type="text" id="holdDesc" class="form-control" value="Hotel Booking Security Hold">
+            </div>
+            <button class="btn-navy" onclick="executeHoldAction()">
+              Place Authorization Hold &rarr;
+            </button>
           </div>
 
-          <div class="form-group">
-            <label>Amount in Rupees (₹)</label>
-            <input type="number" id="studioAmount" class="form-control" value="250" min="1" step="1">
+          <!-- 4. OPEN ACCOUNT SECTION -->
+          <div id="panel-create" class="tab-panel">
+            <div class="card-light-title">
+              <span>➕ Open Customer Account Vault</span>
+              <span style="font-size:12px; color:var(--text-muted);">Minor Unit Accounting</span>
+            </div>
+            <div class="form-group">
+              <label>Customer Name / Entity</label>
+              <input type="text" id="newAccountOwner" class="form-control" placeholder="e.g. Charlie Brown">
+            </div>
+            <div class="form-group">
+              <label>Base Currency</label>
+              <input type="text" id="newAccountCurrency" class="form-control" value="INR" readonly>
+            </div>
+            <button class="btn-navy" onclick="executeCreateAccountAction()">
+              Create Account Vault &rarr;
+            </button>
           </div>
 
-          <button class="btn-navy" id="studioBtn" onclick="handleStudioAction()">
-            Execute Safe Transfer &rarr;
-          </button>
+          <!-- 5. AUDIT & RECONCILE SECTION -->
+          <div id="panel-audit" class="tab-panel">
+            <div class="card-light-title">
+              <span>🛡️ Cryptographic & Reconcile Audit</span>
+              <span style="font-size:12px; color:var(--success); font-weight:700;">SHA-256 Tamper-Proof</span>
+            </div>
+            <div class="info-badge-box">
+              Verify that the append-only ledger cryptographic chain is unbroken and global debits strictly equal credits.
+            </div>
+            <div style="display:flex; flex-direction:column; gap:12px;">
+              <button class="btn-navy" onclick="verifyAuditChain()">
+                Verify Cryptographic SHA-256 Chain &rarr;
+              </button>
+              <button class="btn-navy" style="background:var(--white); border:1px solid var(--border); color:var(--brand-navy);" onclick="verifyReconcile()">
+                Run Global Zero-Sum Reconciliation &rarr;
+              </button>
+            </div>
+          </div>
+
         </div>
 
-        <!-- Right: Live Customer Vaults -->
+        <!-- Right Column: Live Customer Vaults -->
         <div class="card-light">
           <div class="card-light-title">
             <span>Customer Accounts</span>
-            <span style="font-size:12px; color:var(--text-muted); font-family:var(--font-sans);" id="accountCountLabel">2 Active</span>
+            <span style="font-size:12px; color:var(--text-muted); font-family:var(--font-sans);" id="accountCountLabel">Active</span>
           </div>
 
           <div id="accountsContainer">
@@ -807,7 +1072,7 @@
   <script>
     let state = {
       accounts: [],
-      currentAction: 'transfer'
+      currentAction: 'deposit'
     };
 
     function notify(msg, ok = true) {
@@ -823,52 +1088,114 @@
       d.classList.toggle('open');
     }
 
-    function selectAction(type) {
-      state.currentAction = type;
-      toggleDrawer();
-      const title = document.getElementById('studioTitle');
-      const btn = document.getElementById('studioBtn');
-      const amt = document.getElementById('studioAmount');
+    function switchStudioTab(tabId) {
+      state.currentAction = tabId;
 
-      if (type === 'deposit') {
-        title.textContent = "Deposit Cash (Counterparty CASH)";
-        btn.textContent = "Deposit ₹500.00 into Account →";
-        amt.value = "500";
-      } else if (type === 'hold') {
-        title.textContent = "Reserve Pre-Auth Hold";
-        btn.textContent = "Place ₹200.00 Pre-Auth Hold →";
-        amt.value = "200";
-      } else if (type === 'audit') {
-        title.textContent = "Cryptographic Audit Verification";
-        btn.textContent = "Verify Entire SHA-256 Hash Chain →";
-      } else {
-        title.textContent = "Send Peer-to-Peer Transfer";
-        btn.textContent = "Execute Safe Transfer →";
-        amt.value = "250";
-      }
+      // Update Tab Buttons
+      const tabBtns = document.querySelectorAll('.tab-btn');
+      tabBtns.forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById(`tab-btn-${tabId}`);
+      if (activeBtn) activeBtn.classList.add('active');
+
+      // Update Tab Panels
+      const panels = document.querySelectorAll('.tab-panel');
+      panels.forEach(p => p.classList.remove('active'));
+      const activePanel = document.getElementById(`panel-${tabId}`);
+      if (activePanel) activePanel.classList.add('active');
+    }
+
+    function selectAction(type) {
+      toggleDrawer();
+      switchStudioTab(type);
       document.getElementById('studio').scrollIntoView({behavior:'smooth'});
     }
 
-    async function handleStudioAction() {
-      const type = state.currentAction;
-      const alice = state.accounts.find(a => a.owner.includes("Alice"));
-      const bob = state.accounts.find(a => a.owner.includes("Bob"));
+    function setDepositAmount(rupees) {
+      document.getElementById('depAmount').value = rupees;
+    }
 
-      if (type === 'deposit') {
-        if (!alice) return notify("Account not ready", false);
-        await postDeposit(alice.id, 50000);
-      } else if (type === 'hold') {
-        if (!alice) return notify("Account not ready", false);
-        await postHold(alice.id, 20000);
-      } else if (type === 'audit') {
-        await verifyAuditChain();
-      } else {
-        const from = document.getElementById('studioFrom').value;
-        const to = document.getElementById('studioTo').value;
-        const amt = parseFloat(document.getElementById('studioAmount').value) * 100;
-        if (!from || !to) return notify("Select both accounts", false);
-        if (from === to) return notify("Cannot transfer to self", false);
-        await postTransfer(from, to, amt);
+    function setTransferAmount(rupees) {
+      document.getElementById('studioAmount').value = rupees;
+    }
+
+    async function executeDepositAction() {
+      const targetId = document.getElementById('depAccount').value;
+      const amtVal = parseFloat(document.getElementById('depAmount').value);
+      if (!targetId) return notify("Please select a target account for deposit", false);
+      if (isNaN(amtVal) || amtVal <= 0) return notify("Please enter a valid positive deposit amount", false);
+      const minorAmt = Math.round(amtVal * 100);
+      await postDeposit(targetId, minorAmt);
+    }
+
+    async function quickDeposit(id, rupees) {
+      await postDeposit(id, rupees * 100);
+    }
+
+    function selectDepositTarget(id) {
+      switchStudioTab('deposit');
+      const sel = document.getElementById('depAccount');
+      if (sel) sel.value = id;
+      document.getElementById('studio').scrollIntoView({behavior:'smooth'});
+    }
+
+    async function executeTransferAction() {
+      const from = document.getElementById('studioFrom').value;
+      const to = document.getElementById('studioTo').value;
+      const amt = parseFloat(document.getElementById('studioAmount').value) * 100;
+      if (!from || !to) return notify("Select both sender and recipient", false);
+      if (from === to) return notify("Cannot transfer to the same account", false);
+      if (isNaN(amt) || amt <= 0) return notify("Enter a valid transfer amount", false);
+      await postTransfer(from, to, amt);
+    }
+
+    async function executeHoldAction() {
+      const id = document.getElementById('holdAccount').value;
+      const amtVal = parseFloat(document.getElementById('holdAmount').value);
+      const desc = document.getElementById('holdDesc').value || "Pre-Authorization Hold";
+      if (!id) return notify("Select an account", false);
+      if (isNaN(amtVal) || amtVal <= 0) return notify("Enter a valid hold amount", false);
+      const minorAmt = Math.round(amtVal * 100);
+      try {
+        const res = await fetch(`/accounts/${id}/holds`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({amount: minorAmt, description: desc})
+        });
+        const d = await res.json();
+        if (res.ok) {
+          notify(`🏨 Pre-Auth Hold of ₹${(minorAmt/100).toFixed(2)} placed! Available balance ring-fenced.`);
+          await refreshAll();
+        } else {
+          notify(d.error || "Failed to place hold", false);
+        }
+      } catch (e) {
+        notify(e.message, false);
+      }
+    }
+
+    async function executeCreateAccountAction() {
+      const owner = document.getElementById('newAccountOwner').value.trim();
+      if (!owner) return notify("Please enter a customer or entity name", false);
+      try {
+        const res = await fetch('/accounts', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({owner, currency: 'INR'})
+        });
+        const d = await res.json();
+        if (res.ok) {
+          notify(`✅ Account vault opened for ${owner}!`);
+          document.getElementById('newAccountOwner').value = '';
+          state.accounts.push(d);
+          await refreshAll();
+          switchStudioTab('deposit');
+          const depSel = document.getElementById('depAccount');
+          if (depSel) depSel.value = d.id;
+        } else {
+          notify(d.error || "Failed to create account", false);
+        }
+      } catch (e) {
+        notify(e.message, false);
       }
     }
 
@@ -904,25 +1231,12 @@
           headers: {'Content-Type': 'application/json', 'Idempotency-Key': 'dep-' + Date.now()},
           body: JSON.stringify({amount: minorAmt})
         });
+        const d = await res.json();
         if (res.ok) {
-          notify(`✅ Deposited ₹${(minorAmt/100).toFixed(2)} with counterparty CASH!`);
+          notify(`💰 Deposited ₹${(minorAmt/100).toFixed(2)}! (Debited Account, Credited System CASH)`);
           await refreshAll();
-        }
-      } catch (e) {
-        notify(e.message, false);
-      }
-    }
-
-    async function postHold(id, minorAmt) {
-      try {
-        const res = await fetch(`/accounts/${id}/holds`, {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({amount: minorAmt, description: "Hotel Room Security Pre-Auth"})
-        });
-        if (res.ok) {
-          notify(`🏨 ₹${(minorAmt/100).toFixed(2)} Pre-Auth Hold placed! Available balance ring-fenced.`);
-          await refreshAll();
+        } else {
+          notify(d.error || "Deposit failed", false);
         }
       } catch (e) {
         notify(e.message, false);
@@ -936,7 +1250,23 @@
         if (d.verified) {
           notify(`🔒 Cryptographic Seal Validated! All ${d.total_entries_checked} entries verified via unbroken SHA-256 chain.`);
         }
-      } catch (e) {}
+      } catch (e) {
+        notify("Verification failed", false);
+      }
+    }
+
+    async function verifyReconcile() {
+      try {
+        const res = await fetch('/admin/reconcile');
+        const d = await res.json();
+        if (d.status === 'OK') {
+          notify(`⚖️ Global Zero-Sum Verified! Debits (₹${(d.total_debits/100).toFixed(2)}) == Credits (₹${(d.total_credits/100).toFixed(2)}) across ${d.accounts_checked} accounts.`);
+        } else {
+          notify("Reconciliation discrepancy detected!", false);
+        }
+      } catch (e) {
+        notify(e.message, false);
+      }
     }
 
     async function refreshAll() {
@@ -965,17 +1295,27 @@
       const c = document.getElementById('accountsContainer');
       const fromSel = document.getElementById('studioFrom');
       const toSel = document.getElementById('studioTo');
+      const depSel = document.getElementById('depAccount');
+      const holdSel = document.getElementById('holdAccount');
 
       if (!state.accounts.length) {
         c.innerHTML = '<div style="color:var(--text-muted); padding:20px; text-align:center;">No accounts found. Click Reset Demo Scenario above!</div>';
         return;
       }
 
+      document.getElementById('accountCountLabel').textContent = `${state.accounts.length} Active Vaults`;
+
       c.innerHTML = state.accounts.map(a => `
         <div class="acc-item">
-          <div>
+          <div style="flex:1;">
             <div class="acc-name">${a.owner}</div>
             <div class="acc-sub">${a.id}</div>
+            <div class="quick-action-row">
+              <button class="btn-mini-gold" onclick="quickDeposit('${a.id}', 500)">+ ₹500</button>
+              <button class="btn-mini-gold" onclick="quickDeposit('${a.id}', 1000)">+ ₹1,000</button>
+              <button class="btn-mini-gold" onclick="quickDeposit('${a.id}', 5000)">+ ₹5,000</button>
+              <button class="btn-mini-gold" style="border-color:var(--border); background:#F1F5F9; color:var(--brand-navy);" onclick="selectDepositTarget('${a.id}')">Select for Deposit</button>
+            </div>
           </div>
           <div class="acc-money">
             <div class="acc-total">₹${(a.balance/100).toFixed(2)}</div>
@@ -985,9 +1325,19 @@
       `).join('');
 
       const opts = state.accounts.map(a => `<option value="${a.id}">${a.owner} (₹${(a.available_balance/100).toFixed(2)} avail)</option>`).join('');
-      fromSel.innerHTML = opts;
-      toSel.innerHTML = opts;
-      if (toSel.options.length > 1) toSel.selectedIndex = 1;
+      const depOpts = state.accounts.map(a => `<option value="${a.id}">${a.owner} (Current: ₹${(a.balance/100).toFixed(2)})</option>`).join('');
+
+      if (fromSel) fromSel.innerHTML = opts;
+      if (toSel) {
+        toSel.innerHTML = opts;
+        if (toSel.options.length > 1) toSel.selectedIndex = 1;
+      }
+      if (depSel) {
+        const prev = depSel.value;
+        depSel.innerHTML = depOpts;
+        if (state.accounts.some(a => a.id === prev)) depSel.value = prev;
+      }
+      if (holdSel) holdSel.innerHTML = opts;
 
       updateAvailHint();
 
@@ -1052,7 +1402,7 @@
     }
 
     async function runAutomatedDemo() {
-      selectAction('transfer');
+      switchStudioTab('transfer');
       notify("Demonstrating Alice sending ₹250.00 to Bob...");
       const alice = state.accounts.find(a => a.owner.includes("Alice"));
       const bob = state.accounts.find(a => a.owner.includes("Bob"));
