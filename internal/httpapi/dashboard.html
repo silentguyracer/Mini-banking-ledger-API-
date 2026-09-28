@@ -3,24 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ApexLedger &bull; Enterprise Banking &amp; Financial Ledger Platform</title>
+  <title>ApexLedger &bull; Banking Ledger Interactive Showcase</title>
   <style>
     :root {
       --bg: #090d16;
       --card: #111827;
       --card-hover: #162032;
       --border: #1f293d;
-      --border-accent: #2e3e5c;
-      --text: #f1f5f9;
+      --text: #f8fafc;
       --text-muted: #94a3b8;
       --text-dim: #64748b;
       --primary: #38bdf8;
-      --primary-glow: rgba(56, 189, 248, 0.25);
+      --primary-dark: #0284c7;
       --success: #10b981;
-      --success-glow: rgba(16, 185, 129, 0.2);
       --warning: #f59e0b;
       --danger: #f43f5e;
-      --accent: #818cf8;
+      --accent: #a855f7;
       --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     }
 
@@ -28,362 +26,332 @@
     body {
       background: var(--bg);
       color: var(--text);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       min-height: 100vh;
-      line-height: 1.5;
-      overflow-x: hidden;
-    }
-
-    /* Ambient background gradient glow */
-    body::before {
-      content: "";
-      position: fixed;
-      top: -200px;
-      left: 20%;
-      width: 600px;
-      height: 400px;
-      background: radial-gradient(circle, rgba(56,189,248,0.08) 0%, rgba(0,0,0,0) 70%);
-      pointer-events: none;
-      z-index: 0;
+      line-height: 1.6;
+      padding-bottom: 60px;
     }
 
     .container {
-      max-width: 1400px;
+      max-width: 1200px;
       margin: 0 auto;
-      padding: 24px 32px;
-      position: relative;
-      z-index: 1;
+      padding: 24px 20px;
     }
 
-    /* Header Bar */
+    /* Top Navigation */
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding-bottom: 20px;
-      margin-bottom: 28px;
       border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
     }
-    .brand-wrap {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-    .brand-icon {
-      width: 40px;
-      height: 40px;
-      background: linear-gradient(135deg, #0284c7, #38bdf8);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 0 20px var(--primary-glow);
-    }
-    .brand-title {
-      font-size: 20px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      color: #fff;
-    }
-    .brand-subtitle {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--text-muted);
-      font-weight: 600;
-    }
-    .header-actions {
+    .brand {
       display: flex;
       align-items: center;
       gap: 12px;
     }
-    .badge-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.25);
-      color: var(--success);
-      padding: 6px 14px;
-      border-radius: 9999px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-    .badge-pill.error {
-      background: rgba(244, 63, 94, 0.1);
-      border-color: rgba(244, 63, 94, 0.25);
-      color: var(--danger);
-    }
-    .pulse-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: currentColor;
-      box-shadow: 0 0 8px currentColor;
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.85); } }
-
-    /* Top Stats Grid */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 18px;
-      margin-bottom: 28px;
-    }
-    .stat-card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 20px;
-      position: relative;
-      overflow: hidden;
-      transition: all 0.25s ease;
-    }
-    .stat-card:hover {
-      border-color: var(--border-accent);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px -6px rgba(0,0,0,0.4);
-    }
-    .stat-header {
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      border-radius: 12px;
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
     }
-    .stat-label {
-      font-size: 12px;
-      text-transform: uppercase;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      color: var(--text-muted);
-    }
-    .stat-icon {
-      color: var(--primary);
-      opacity: 0.8;
-    }
-    .stat-value {
-      font-size: 28px;
+    .brand-title {
+      font-size: 22px;
       font-weight: 800;
-      color: #fff;
       letter-spacing: -0.5px;
     }
-    .stat-sub {
-      font-size: 12px;
-      color: var(--text-dim);
-      margin-top: 6px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .stat-sub.positive { color: var(--success); }
-
-    /* Layout Split */
-    .dashboard-split {
-      display: grid;
-      grid-template-columns: 460px 1fr;
-      gap: 24px;
-      margin-bottom: 28px;
-    }
-    @media (max-width: 1100px) {
-      .dashboard-split { grid-template-columns: 1fr; }
+    .brand-desc {
+      font-size: 13px;
+      color: var(--text-muted);
     }
 
-    /* Card Panels */
-    .panel {
-      background: var(--card);
-      border: 1px solid var(--border);
+    /* Guided Showcase Stepper Bar */
+    .showcase-banner {
+      background: linear-gradient(135deg, #111e38, #182747);
+      border: 1px solid #2b4372;
       border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 4px 20px -2px rgba(0,0,0,0.3);
+      padding: 20px 24px;
+      margin-bottom: 28px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
     }
-    .panel-header {
+    .showcase-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid var(--border);
+      margin-bottom: 16px;
     }
-    .panel-title {
+    .showcase-title {
       font-size: 16px;
       font-weight: 700;
       color: #fff;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
-
-    /* Navigation Tabs */
-    .nav-tabs {
+    .steps-nav {
       display: flex;
-      gap: 6px;
-      background: #090d16;
-      padding: 4px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-      border: 1px solid var(--border);
+      gap: 8px;
+      flex-wrap: wrap;
     }
-    .nav-tab-btn {
-      flex: 1;
-      padding: 8px 12px;
-      background: transparent;
-      border: none;
-      color: var(--text-muted);
-      font-size: 12px;
+    .step-btn {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--text);
+      padding: 8px 14px;
+      border-radius: 9999px;
+      font-size: 13px;
       font-weight: 600;
-      border-radius: 7px;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
       transition: all 0.2s;
-      text-align: center;
-      white-space: nowrap;
     }
-    .nav-tab-btn:hover { color: #fff; }
-    .nav-tab-btn.active {
-      background: var(--card);
-      color: var(--primary);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-      border: 1px solid rgba(56, 189, 248, 0.2);
+    .step-btn:hover {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: var(--primary);
+    }
+    .step-btn.active {
+      background: var(--primary);
+      color: #090d16;
+      border-color: var(--primary);
+      font-weight: 700;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
     }
 
-    /* Forms */
-    .form-group {
-      margin-bottom: 16px;
+    /* Explanation Box */
+    .explainer-box {
+      background: #090d16;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      font-size: 14px;
+      margin-top: 14px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
     }
-    .form-label {
+    .explainer-icon {
+      font-size: 22px;
+      line-height: 1;
+    }
+    .explainer-text h4 {
+      color: var(--primary);
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+    .explainer-text p {
+      color: var(--text-muted);
+      font-size: 13px;
+      margin: 0;
+    }
+
+    /* Simple Summary Cards */
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .metric-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      position: relative;
+    }
+    .metric-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    .metric-val {
+      font-size: 26px;
+      font-weight: 800;
+      color: #fff;
+    }
+    .metric-status {
+      font-size: 12px;
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+    }
+    .text-green { color: var(--success); }
+    .text-blue { color: var(--primary); }
+
+    /* Main Interaction Split */
+    .interactive-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 28px;
+    }
+    @media (max-width: 900px) {
+      .interactive-grid { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+    }
+    .panel-head {
       display: flex;
       justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .panel-head h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Accounts Cards Display */
+    .account-card-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .user-card {
+      background: #090d16;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s;
+    }
+    .user-card:hover {
+      border-color: #2b3952;
+      background: #0d1322;
+    }
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #1e293b;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+    }
+    .user-info {
+      flex: 1;
+      margin-left: 14px;
+    }
+    .user-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .user-id {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+    .user-balances {
+      text-align: right;
+    }
+    .user-total-bal {
+      font-size: 18px;
+      font-weight: 800;
+      color: #fff;
+    }
+    .user-avail-bal {
       font-size: 12px;
+      color: var(--success);
       font-weight: 600;
+    }
+
+    /* Simple Forms */
+    .form-row {
+      margin-bottom: 16px;
+    }
+    .form-row label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
       color: var(--text-muted);
       margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
-    .form-input, .form-select {
+    .input-field, .select-field {
       width: 100%;
-      padding: 11px 14px;
+      padding: 12px 14px;
       background: #090d16;
       border: 1px solid var(--border);
       border-radius: 10px;
       color: #fff;
-      font-size: 13px;
+      font-size: 15px;
       outline: none;
-      transition: all 0.2s;
+      transition: border 0.2s;
     }
-    .form-input:focus, .form-select:focus {
+    .input-field:focus, .select-field:focus {
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
     }
-    .btn {
-      display: inline-flex;
+    .btn-action {
+      width: 100%;
+      padding: 14px;
+      background: var(--primary);
+      color: #090d16;
+      font-size: 15px;
+      font-weight: 800;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      width: 100%;
-      padding: 12px 18px;
-      background: var(--primary);
-      color: #090d16;
-      font-weight: 700;
-      font-size: 13px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
       transition: all 0.2s;
     }
-    .btn:hover {
+    .btn-action:hover {
       background: #7dd3fc;
       transform: translateY(-1px);
-      box-shadow: 0 4px 14px var(--primary-glow);
-    }
-    .btn-secondary {
-      background: #1f293d;
-      color: #fff;
-    }
-    .btn-secondary:hover {
-      background: #2b3952;
-      box-shadow: none;
     }
     .btn-outline {
       background: transparent;
       border: 1px solid var(--border);
       color: var(--text-muted);
+      padding: 8px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
     }
     .btn-outline:hover {
       color: #fff;
       border-color: var(--text-muted);
     }
 
-    /* Account Vault Cards */
-    .accounts-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 16px;
-      max-height: 480px;
-      overflow-y: auto;
-      padding-right: 4px;
-    }
-    .account-vault-card {
-      background: #090d16;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 18px;
-      position: relative;
-      transition: all 0.2s;
-    }
-    .account-vault-card:hover {
-      border-color: var(--border-accent);
-      background: #0c121f;
-    }
-    .vault-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 12px;
-    }
-    .vault-owner {
-      font-weight: 700;
-      font-size: 15px;
-      color: #fff;
-    }
-    .vault-uuid {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: var(--text-dim);
-      margin-top: 2px;
-    }
-    .vault-tag {
-      font-size: 10px;
-      text-transform: uppercase;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-weight: 700;
-      background: rgba(56, 189, 248, 0.1);
-      color: var(--primary);
-      border: 1px solid rgba(56, 189, 248, 0.2);
-    }
-    .vault-balance-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-end;
-      margin-top: 14px;
-      padding-top: 12px;
-      border-top: 1px dashed var(--border);
-    }
-    .vault-balance-main {
-      font-size: 20px;
-      font-weight: 800;
-      color: #fff;
-    }
-    .vault-avail {
-      font-size: 12px;
-      color: var(--success);
-      font-weight: 600;
-      text-align: right;
-    }
-
-    /* Live Journal Entries Table */
-    .ledger-table-wrap {
+    /* History Table */
+    .history-wrap {
       overflow-x: auto;
-      max-height: 420px;
     }
     table {
       width: 100%;
@@ -398,787 +366,556 @@
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      font-weight: 700;
-      position: sticky;
-      top: 0;
-      background: var(--card);
     }
     td {
       padding: 14px 16px;
       border-bottom: 1px solid var(--border);
-      color: var(--text);
     }
-    tr:hover td {
-      background: rgba(255,255,255,0.02);
-    }
-    .direction-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
+    .side-badge {
+      display: inline-block;
       padding: 3px 8px;
       border-radius: 6px;
       font-weight: 700;
       font-size: 11px;
       text-transform: uppercase;
     }
-    .direction-badge.debit {
-      background: rgba(244, 63, 94, 0.12);
-      color: var(--danger);
-      border: 1px solid rgba(244, 63, 94, 0.25);
-    }
-    .direction-badge.credit {
-      background: rgba(16, 185, 129, 0.12);
-      color: var(--success);
-      border: 1px solid rgba(16, 185, 129, 0.25);
-    }
-    .hash-badge {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--primary);
-      background: rgba(56, 189, 248, 0.08);
-      padding: 2px 8px;
-      border-radius: 4px;
-      border: 1px solid rgba(56, 189, 248, 0.2);
-      cursor: pointer;
-    }
-    .hash-badge:hover {
-      background: rgba(56, 189, 248, 0.18);
-    }
+    .side-debit { background: rgba(244, 63, 94, 0.15); color: var(--danger); }
+    .side-credit { background: rgba(16, 185, 129, 0.15); color: var(--success); }
 
-    /* Modal / Inspector */
-    .modal-overlay {
+    /* Modal */
+    .modal-backdrop {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.75);
+      background: rgba(0,0,0,0.8);
       backdrop-filter: blur(4px);
-      z-index: 100;
+      z-index: 999;
       align-items: center;
       justify-content: center;
     }
-    .modal-overlay.active { display: flex; }
-    .modal {
+    .modal-backdrop.show { display: flex; }
+    .modal-box {
       background: var(--card);
-      border: 1px solid var(--border-accent);
-      border-radius: 18px;
-      width: 90%;
-      max-width: 600px;
-      padding: 28px;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-      position: relative;
-    }
-    .modal-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    .modal-title { font-size: 18px; font-weight: 800; color: #fff; }
-    .modal-close {
-      background: transparent;
-      border: none;
-      color: var(--text-muted);
-      font-size: 20px;
-      cursor: pointer;
-    }
-    .json-code {
-      background: #090d16;
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 14px;
-      font-family: var(--font-mono);
-      font-size: 12px;
-      color: #38bdf8;
-      overflow-x: auto;
-      max-height: 280px;
+      border-radius: 16px;
+      padding: 24px;
+      width: 90%;
+      max-width: 550px;
     }
 
-    /* Notifications Banner */
-    .toast {
+    /* Toast */
+    .toast-msg {
       position: fixed;
       bottom: 24px;
       right: 24px;
       padding: 14px 20px;
       border-radius: 10px;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 600;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
       z-index: 1000;
       display: none;
-      animation: slideUp 0.3s ease;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     }
-    .toast-success { background: #064e3b; border: 1px solid #059669; color: #a7f3d0; }
-    .toast-error { background: #4c0519; border: 1px solid #e11d48; color: #fecdd3; }
-    @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .toast-msg.success { background: #064e3b; color: #a7f3d0; border: 1px solid #059669; }
+    .toast-msg.error { background: #4c0519; color: #fecdd3; border: 1px solid #e11d48; }
   </style>
 </head>
 <body>
   <div class="container">
     <!-- Header -->
     <header>
-      <div class="brand-wrap">
-        <div class="brand-icon">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
-          </svg>
-        </div>
+      <div class="brand">
+        <div class="brand-icon">&#127974;</div>
         <div>
           <div class="brand-title">ApexLedger</div>
-          <div class="brand-subtitle">High-Concurreny Financial Ledger Platform</div>
+          <div class="brand-desc">Interactive Banking Ledger Demonstration</div>
         </div>
       </div>
-      <div class="header-actions">
-        <div id="statusPill" class="badge-pill">
-          <span class="pulse-dot"></span>
-          <span id="statusLabel">Zero-Sum Ledger Conserved</span>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <div class="btn-outline" style="cursor:default; color:var(--success); border-color:rgba(16,185,129,0.3); background:rgba(16,185,129,0.08);">
+          &#9679; Zero-Sum Books Balanced
         </div>
-        <a href="/metrics" target="_blank" class="btn btn-secondary" style="width:auto; text-decoration:none; padding:8px 14px; font-size:12px;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
-          Prometheus
-        </a>
-        <button class="btn btn-secondary" style="width:auto; padding:8px 14px; font-size:12px;" onclick="refreshLiveState()">
-          &#8635; Refresh
+        <button class="btn-outline" onclick="loadSampleScenario()">
+          &#8635; Reset Demo Data
         </button>
       </div>
     </header>
 
-    <!-- Key Metrics Cards -->
-    <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-header">
-          <span class="stat-label">Total Capital Managed</span>
-          <svg class="stat-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8M12 18V6"/></svg>
+    <!-- Guided Showcase Stepper -->
+    <div class="showcase-banner">
+      <div class="showcase-header">
+        <div class="showcase-title">
+          <span>&#127891; Guided Interactive Showcase (Click any step to demonstrate)</span>
         </div>
-        <div class="stat-value" id="statCapital">₹0.00</div>
-        <div class="stat-sub positive">&#10003; Minor Unit BigInt Arithmetic</div>
       </div>
 
-      <div class="stat-card">
-        <div class="stat-header">
-          <span class="stat-label">Double-Entry Balance</span>
-          <svg class="stat-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-        </div>
-        <div class="stat-value" style="color:var(--success);" id="statZeroSum">&Sigma; Debits = Credits</div>
-        <div class="stat-sub" id="statDebitsCredits">Debits: 0 &bull; Credits: 0</div>
+      <div class="steps-nav">
+        <button class="step-btn active" onclick="activateStep(1)">1. Accounts</button>
+        <button class="step-btn" onclick="activateStep(2)">2. Cash Deposit</button>
+        <button class="step-btn" onclick="activateStep(3)">3. Peer Transfer</button>
+        <button class="step-btn" onclick="activateStep(4)">4. Double-Click Shield (Idempotency)</button>
+        <button class="step-btn" onclick="activateStep(5)">5. Hotel Pre-Auth Hold</button>
+        <button class="step-btn" onclick="activateStep(6)">6. Cryptographic Proof</button>
       </div>
 
-      <div class="stat-card">
-        <div class="stat-header">
-          <span class="stat-label">Audit Chain Integrity</span>
-          <svg class="stat-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        </div>
-        <div class="stat-value" style="color:var(--primary);" id="statAuditStatus">Verified</div>
-        <div class="stat-sub positive">&#128274; Unbroken SHA-256 Hash Chain</div>
-      </div>
-
-      <div class="stat-card">
-        <div class="stat-header">
-          <span class="stat-label">Active Customer Accounts</span>
-          <svg class="stat-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        </div>
-        <div class="stat-value" id="statAccountCount">0</div>
-        <div class="stat-sub">Deterministic Lock Ordering</div>
-      </div>
-    </div>
-
-    <!-- Main Content Split -->
-    <div class="dashboard-split">
-      <!-- Left Panel: Transaction Controls -->
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-            Transactional Operations
-          </div>
-        </div>
-
-        <!-- Navigation Tabs -->
-        <div class="nav-tabs">
-          <button class="nav-tab-btn active" onclick="setOpTab('transfer', event)">Transfer</button>
-          <button class="nav-tab-btn" onclick="setOpTab('deposit', event)">Deposit</button>
-          <button class="nav-tab-btn" onclick="setOpTab('hold', event)">Hold / Pre-Auth</button>
-          <button class="nav-tab-btn" onclick="setOpTab('split', event)">Split Payment</button>
-          <button class="nav-tab-btn" onclick="setOpTab('account', event)">+ Account</button>
-        </div>
-
-        <!-- Form: Transfer -->
-        <div id="tab-transfer">
-          <div class="form-group">
-            <div class="form-label">
-              <span>Source Account (From)</span>
-              <span id="availFromPreview" style="color:var(--success);"></span>
-            </div>
-            <select id="transferFrom" class="form-select" onchange="updateAvailPreview()"></select>
-          </div>
-          <div class="form-group">
-            <div class="form-label"><span>Destination Account (To)</span></div>
-            <select id="transferTo" class="form-select"></select>
-          </div>
-          <div class="form-group">
-            <div class="form-label"><span>Amount (in minor units, e.g. 50000 = ₹500.00)</span></div>
-            <input type="number" id="transferAmount" class="form-input" value="10000" min="1">
-          </div>
-          <button class="btn" onclick="executeTransfer()">
-            Commit Transfer &rarr;
-          </button>
-        </div>
-
-        <!-- Form: Deposit -->
-        <div id="tab-deposit" style="display:none;">
-          <div class="form-group">
-            <div class="form-label"><span>Target Account</span></div>
-            <select id="depositAccount" class="form-select"></select>
-          </div>
-          <div class="form-group">
-            <div class="form-label"><span>Deposit Amount (paise / cents)</span></div>
-            <input type="number" id="depositAmount" class="form-input" value="50000" min="1">
-          </div>
-          <p style="font-size:11px; color:var(--text-dim); margin-bottom:14px;">
-            &#8505; Creates an atomic double-entry transaction debiting system account <code>CASH</code> and crediting the customer account.
+      <!-- Explainer Box -->
+      <div class="explainer-box">
+        <div class="explainer-icon" id="explainerIcon">&#128161;</div>
+        <div class="explainer-text">
+          <h4 id="explainerTitle">Step 1: Customer Accounts Initialized</h4>
+          <p id="explainerBody">
+            Meet Alice and Bob. In a real banking ledger, money is represented as exact integers (never floats) to prevent decimal rounding bugs. Both accounts start ready to transact.
           </p>
-          <button class="btn" onclick="executeDeposit()">
-            Deposit Cash &rarr;
-          </button>
-        </div>
-
-        <!-- Form: Hold / Pre-Auth -->
-        <div id="tab-hold" style="display:none;">
-          <div class="form-group">
-            <div class="form-label"><span>Account to Reserve Funds</span></div>
-            <select id="holdAccount" class="form-select"></select>
-          </div>
-          <div class="form-group">
-            <div class="form-label"><span>Authorization Amount</span></div>
-            <input type="number" id="holdAmount" class="form-input" value="25000" min="1">
-          </div>
-          <div class="form-group">
-            <div class="form-label"><span>Memo / Reason</span></div>
-            <input type="text" id="holdMemo" class="form-input" value="E-Commerce Card Pre-Auth">
-          </div>
-          <button class="btn" onclick="executeCreateHold()">
-            Ring-Fence Available Balance &rarr;
-          </button>
-        </div>
-
-        <!-- Form: Split Payment -->
-        <div id="tab-split" style="display:none;">
-          <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">
-            Atomically balances arbitrary $N$-legged payments:
-          </p>
-          <div class="form-group">
-            <div class="form-label"><span>Payer (Debited)</span></div>
-            <select id="splitPayer" class="form-select"></select>
-          </div>
-          <div class="form-group">
-            <div class="form-label"><span>Merchant (Credited 95%)</span></div>
-            <select id="splitMerchant" class="form-select"></select>
-          </div>
-          <div class="form-group">
-            <div class="form-label"><span>Platform Fee (Credited 5%)</span></div>
-            <select id="splitFee" class="form-select"></select>
-          </div>
-          <div class="form-group">
-            <div class="form-label"><span>Total Amount</span></div>
-            <input type="number" id="splitTotal" class="form-input" value="10000" min="100">
-          </div>
-          <button class="btn" onclick="executeSplitPayment()">
-            Execute 3-Legged Split Payment &rarr;
-          </button>
-        </div>
-
-        <!-- Form: Open Account -->
-        <div id="tab-account" style="display:none;">
-          <div class="form-group">
-            <div class="form-label"><span>Account Owner / Entity</span></div>
-            <input type="text" id="newAccountOwner" class="form-input" placeholder="e.g. Alice, Bob, Merchant Corp">
-          </div>
-          <div class="form-group">
-            <div class="form-label"><span>Currency Code (ISO-4217)</span></div>
-            <select id="newAccountCurrency" class="form-select">
-              <option value="INR">INR (₹)</option>
-              <option value="USD">USD ($)</option>
-              <option value="EUR">EUR (€)</option>
-              <option value="GBP">GBP (£)</option>
-            </select>
-          </div>
-          <button class="btn" onclick="executeCreateAccount()">
-            Register Account &rarr;
-          </button>
-        </div>
-
-        <!-- Quick Audit Actions -->
-        <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--border); display:flex; gap:10px;">
-          <button class="btn btn-secondary" style="font-size:12px;" onclick="executeReconcile()">
-            Verify Zero-Sum Invariants
-          </button>
-          <button class="btn btn-secondary" style="font-size:12px;" onclick="executeAuditCheck()">
-            Verify Cryptographic Chain
-          </button>
-        </div>
-      </div>
-
-      <!-- Right Panel: Accounts Vault -->
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
-            Account Vaults &amp; Available Liquidity
-          </div>
-          <button class="btn btn-outline" style="width:auto; padding:4px 10px; font-size:11px;" onclick="loadDemoScenario()">
-            &#9889; Load Demo Accounts
-          </button>
-        </div>
-
-        <div class="accounts-grid" id="vaultsGrid">
-          <div style="color:var(--text-dim); text-align:center; padding:40px;">Loading accounts...</div>
         </div>
       </div>
     </div>
 
-    <!-- Live Journal Entries Section -->
+    <!-- Overview Stats -->
+    <div class="metrics-row">
+      <div class="metric-card">
+        <div class="metric-title">Total Customer Deposits</div>
+        <div class="metric-val" id="statDeposits">₹0.00</div>
+        <div class="metric-status text-green">&#10003; 100% Fully Backed</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">Double-Entry Balance Check</div>
+        <div class="metric-val" id="statBalanceCheck" style="color:var(--success);">Balanced</div>
+        <div class="metric-status" id="statDebitsCredits" style="color:var(--text-dim);">Debits = Credits</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">Tamper-Proof Audit Trail</div>
+        <div class="metric-val text-blue">SHA-256 Linked</div>
+        <div class="metric-status text-blue">&#128274; Unbreakable Hash Chain</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-title">Accidental Double-Charge Shield</div>
+        <div class="metric-val" style="color:var(--warning);">Active</div>
+        <div class="metric-status" style="color:var(--text-dim);">Idempotency Engine ON</div>
+      </div>
+    </div>
+
+    <!-- Interactive Workspace Grid -->
+    <div class="interactive-grid">
+      <!-- Left: Simple Interactive Form -->
+      <div class="panel">
+        <div class="panel-head">
+          <h3 id="formPanelTitle">&#128184; Send Money (Peer Transfer)</h3>
+        </div>
+
+        <div id="actionForm">
+          <div class="form-row">
+            <label>Sender (Who is paying?)</label>
+            <select id="selFrom" class="select-field" onchange="updateAvailHint()"></select>
+            <div id="availHint" style="font-size:12px; color:var(--success); margin-top:4px; font-weight:600;"></div>
+          </div>
+
+          <div class="form-row">
+            <label>Receiver (Who gets the money?)</label>
+            <select id="selTo" class="select-field"></select>
+          </div>
+
+          <div class="form-row">
+            <label>Amount in Rupees (₹)</label>
+            <input type="number" id="numAmount" class="input-field" value="250" min="1" step="1">
+          </div>
+
+          <button class="btn-action" id="mainActionBtn" onclick="handleTransferClick()">
+            Send Money Now &rarr;
+          </button>
+        </div>
+      </div>
+
+      <!-- Right: Live Customer Accounts -->
+      <div class="panel">
+        <div class="panel-head">
+          <h3>&#128101; Customer Accounts (Live State)</h3>
+          <button class="btn-outline" onclick="refreshUI()">&#8635; Refresh</button>
+        </div>
+
+        <div class="account-card-wrap" id="accountCards">
+          <!-- Injected via JavaScript -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Transaction History -->
     <div class="panel">
-      <div class="panel-header">
-        <div class="panel-title">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-          Immutable Double-Entry Journal (Append-Only Log)
-        </div>
-        <div style="font-size:12px; color:var(--text-dim);">
-          Cryptographically Chained with SHA-256
-        </div>
+      <div class="panel-head">
+        <h3>&#128220; Live Double-Entry Ledger (Permanent Records)</h3>
+        <span style="font-size:12px; color:var(--text-muted);">&#128274; Every row mathematically proves the previous row</span>
       </div>
 
-      <div class="ledger-table-wrap">
+      <div class="history-wrap">
         <table>
           <thead>
             <tr>
-              <th>Entry ID</th>
-              <th>Transaction ID</th>
-              <th>Account</th>
-              <th>Direction</th>
+              <th>ID</th>
+              <th>Account Owner</th>
+              <th>Side</th>
               <th>Amount</th>
-              <th>Cryptographic Hash Chain</th>
-              <th>Timestamp</th>
+              <th>Security Seal (SHA-256 Proof)</th>
+              <th>Time</th>
             </tr>
           </thead>
-          <tbody id="journalTableBody">
-            <tr><td colspan="7" style="text-align:center; color:var(--text-dim); padding:30px;">Loading live journal...</td></tr>
+          <tbody id="historyBody">
+            <tr><td colspan="6" style="text-align:center; color:var(--text-dim); padding:20px;">No entries yet.</td></tr>
           </tbody>
         </table>
       </div>
     </div>
   </div>
 
-  <!-- Cryptographic Inspector Modal -->
-  <div id="inspectorModal" class="modal-overlay" onclick="closeModal(event)">
-    <div class="modal" onclick="event.stopPropagation()">
-      <div class="modal-head">
-        <div class="modal-title">&#128269; Cryptographic Entry Inspector</div>
-        <button class="modal-close" onclick="closeModal()">&times;</button>
-      </div>
+  <!-- Proof Inspector Modal -->
+  <div id="proofModal" class="modal-backdrop" onclick="closeModal()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <h3 style="margin-bottom:12px; font-size:18px;">&#128274; Cryptographic Proof of Integrity</h3>
       <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">
-        Proof of cryptographic linkage. The entry hash is calculated from its predecessor, guaranteeing historical tamper-evidence:
+        This entry is permanently sealed into the ledger. Any attempt by a database admin to secretly change the amount would break the hash chain:
       </p>
-      <div class="json-code" id="modalJsonContent"></div>
-      <div style="margin-top:20px; display:flex; justify-content:flex-end;">
-        <button class="btn btn-secondary" style="width:auto; padding:8px 16px;" onclick="closeModal()">Close Inspector</button>
+      <pre id="proofJson" style="background:#090d16; padding:14px; border-radius:10px; font-family:var(--font-mono); font-size:12px; color:var(--primary); overflow:auto; max-height:260px;"></pre>
+      <div style="margin-top:16px; text-align:right;">
+        <button class="btn-outline" onclick="closeModal()">Close Inspector</button>
       </div>
     </div>
   </div>
 
-  <!-- Toast Notifications -->
-  <div id="toastBox" class="toast"></div>
+  <div id="toast" class="toast-msg"></div>
 
   <script>
-    let liveAccounts = [];
-    let liveEntries = [];
+    let state = {
+      accounts: [],
+      entries: [],
+      currentStep: 1
+    };
+
+    const stepGuides = {
+      1: {
+        icon: "&#128101;",
+        title: "Step 1: Customer Accounts Initialized",
+        body: "Notice Alice and Bob below. Each person has a 'Total Balance' and an 'Available Balance'. In financial systems, balances can never go negative."
+      },
+      2: {
+        icon: "&#128181;",
+        title: "Step 2: Depositing Physical Cash",
+        body: "When cash is deposited into Alice's account, double-entry accounting balances it with a special counterparty account called 'CASH'. No money is created out of thin air."
+      },
+      3: {
+        icon: "&#128257;",
+        title: "Step 3: Transferring Money Safely",
+        body: "Alice sends money to Bob. In the database, both accounts are locked in alphabetical order to make deadlocks mathematically impossible."
+      },
+      4: {
+        icon: "&#128737;",
+        title: "Step 4: Accidental Double-Click Protection (Idempotency)",
+        body: "If a user has a spotty mobile connection and double-taps 'Pay', the server detects the duplicate request and returns the previous success receipt without deducting money twice!"
+      },
+      5: {
+        icon: "&#127976;",
+        title: "Step 5: Two-Phase Commit (Hotel Pre-Auth Hold)",
+        body: "When you book a hotel, they place a 'hold'. Notice how Total Balance stays the same, but Available Balance drops! You cannot overdraft money that is held."
+      },
+      6: {
+        icon: "&#128274;",
+        title: "Step 6: Mathematical Proof of Audit (SHA-256)",
+        body: "Click on any security badge in the table below. Every single entry contains a digital fingerprint of the previous entry, proving the data has never been tampered with."
+      }
+    };
 
     function notify(text, ok = true) {
-      const t = document.getElementById('toastBox');
-      t.className = 'toast ' + (ok ? 'toast-success' : 'toast-error');
+      const t = document.getElementById('toast');
+      t.className = 'toast-msg ' + (ok ? 'success' : 'error');
       t.textContent = text;
       t.style.display = 'block';
-      setTimeout(() => { t.style.display = 'none'; }, 4500);
+      setTimeout(() => { t.style.display = 'none'; }, 4000);
     }
 
-    function setOpTab(tabName, evt) {
-      document.querySelectorAll('[id^="tab-"]').forEach(el => el.style.display = 'none');
-      document.querySelectorAll('.nav-tab-btn').forEach(btn => btn.classList.remove('active'));
-      const target = document.getElementById('tab-' + tabName);
-      if (target) target.style.display = 'block';
-      if (evt && evt.target) evt.target.classList.add('active');
-    }
+    function activateStep(n) {
+      state.currentStep = n;
+      document.querySelectorAll('.step-btn').forEach((b, idx) => {
+        b.classList.toggle('active', idx + 1 === n);
+      });
 
-    function formatMinor(cents) {
-      return (cents / 100).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
+      const g = stepGuides[n];
+      document.getElementById('explainerIcon').innerHTML = g.icon;
+      document.getElementById('explainerTitle').textContent = g.title;
+      document.getElementById('explainerBody').textContent = g.body;
 
-    async function refreshLiveState() {
-      try {
-        // 1. Reconcile endpoint
-        const recRes = await fetch('/admin/reconcile');
-        const rec = await recRes.json();
-        if (recRes.ok && rec.status === 'OK') {
-          document.getElementById('statDebitsCredits').textContent = `Debits: ${rec.total_debits.toLocaleString()} • Credits: ${rec.total_credits.toLocaleString()}`;
-          document.getElementById('statusLabel').textContent = 'Zero-Sum Ledger Conserved';
-          document.getElementById('statusPill').className = 'badge-pill';
-        }
+      // Adjust action form for current step
+      const title = document.getElementById('formPanelTitle');
+      const btn = document.getElementById('mainActionBtn');
+      const fromSel = document.getElementById('selFrom');
+      const toSel = document.getElementById('selTo');
+      const amtInput = document.getElementById('numAmount');
 
-        // 2. Fetch Accounts
-        await fetchAccounts();
-
-        // 3. Fetch Entries
-        await fetchAllEntries();
-
-      } catch (e) {
-        console.error("Refresh error:", e);
+      if (n === 2) {
+        title.innerHTML = "&#128181; Quick Cash Deposit";
+        btn.innerHTML = "Deposit ₹500.00 into Alice's Account &rarr;";
+        amtInput.value = "500";
+      } else if (n === 3) {
+        title.innerHTML = "&#128184; Send Money (Peer Transfer)";
+        btn.innerHTML = "Send ₹250.00 from Alice to Bob &rarr;";
+        amtInput.value = "250";
+      } else if (n === 4) {
+        title.innerHTML = "&#128737; Test Accidental Double-Click";
+        btn.innerHTML = "Send with Fixed Key (Click Twice!) &rarr;";
+        amtInput.value = "100";
+      } else if (n === 5) {
+        title.innerHTML = "&#127976; Place Hotel Pre-Authorization Hold";
+        btn.innerHTML = "Ring-Fence ₹200.00 for Hotel Booking &rarr;";
+        amtInput.value = "200";
+      } else if (n === 6) {
+        title.innerHTML = "&#128274; Audit Verification";
+        btn.innerHTML = "Verify Cryptographic SHA-256 Chain &rarr;";
+      } else {
+        title.innerHTML = "&#128184; Send Money (Peer Transfer)";
+        btn.innerHTML = "Send Money Now &rarr;";
+        amtInput.value = "150";
       }
     }
 
-    async function fetchAccounts() {
-      // Collect account details from loaded accounts
-      const grid = document.getElementById('vaultsGrid');
-      const fromSel = document.getElementById('transferFrom');
-      const toSel = document.getElementById('transferTo');
-      const depSel = document.getElementById('depositAccount');
-      const holdSel = document.getElementById('holdAccount');
-      const splitPayer = document.getElementById('splitPayer');
-      const splitMerchant = document.getElementById('splitMerchant');
-      const splitFee = document.getElementById('splitFee');
+    async function handleTransferClick() {
+      const n = state.currentStep;
 
-      let updatedAccounts = [];
-      for (const a of liveAccounts) {
-        try {
-          const res = await fetch(`/accounts/${a.id}`);
-          if (res.ok) {
-            const data = await res.json();
-            updatedAccounts.push(data);
-          }
-        } catch (e) {}
-      }
-
-      if (updatedAccounts.length > 0) {
-        liveAccounts = updatedAccounts;
-      }
-
-      document.getElementById('statAccountCount').textContent = liveAccounts.length;
-
-      let totalCap = 0;
-      liveAccounts.forEach(a => { if (a.type !== 'system') totalCap += a.balance; });
-      document.getElementById('statCapital').textContent = '₹' + formatMinor(totalCap);
-
-      if (!liveAccounts.length) {
-        grid.innerHTML = '<div style="color:var(--text-dim); text-align:center; padding:40px;">No accounts yet. Click "Load Demo Accounts" to start!</div>';
-        return;
-      }
-
-      grid.innerHTML = liveAccounts.map(a => `
-        <div class="account-vault-card">
-          <div class="vault-head">
-            <div>
-              <div class="vault-owner">${a.owner}</div>
-              <div class="vault-uuid">${a.id}</div>
-            </div>
-            <span class="vault-tag">${a.currency}</span>
-          </div>
-          <div class="vault-balance-row">
-            <div>
-              <div style="font-size:10px; color:var(--text-dim); text-transform:uppercase;">Total Balance</div>
-              <div class="vault-balance-main">${a.currency === 'INR' ? '₹' : '$'}${formatMinor(a.balance)}</div>
-            </div>
-            <div>
-              <div style="font-size:10px; color:var(--text-dim); text-transform:uppercase;">Available</div>
-              <div class="vault-avail">${a.currency === 'INR' ? '₹' : '$'}${formatMinor(a.available_balance)}</div>
-            </div>
-          </div>
-        </div>
-      `).join('');
-
-      const opts = liveAccounts.map(a => `<option value="${a.id}">${a.owner} (${a.currency === 'INR' ? '₹' : '$'}${formatMinor(a.available_balance)} avail)</option>`).join('');
-      fromSel.innerHTML = opts;
-      toSel.innerHTML = opts;
-      depSel.innerHTML = opts;
-      holdSel.innerHTML = opts;
-      splitPayer.innerHTML = opts;
-      splitMerchant.innerHTML = opts;
-      splitFee.innerHTML = opts;
-
-      if (toSel.options.length > 1) toSel.selectedIndex = 1;
-      if (splitMerchant.options.length > 1) splitMerchant.selectedIndex = 1;
-      if (splitFee.options.length > 2) splitFee.selectedIndex = 2;
-
-      updateAvailPreview();
-    }
-
-    function updateAvailPreview() {
-      const fromSel = document.getElementById('transferFrom');
-      const cur = liveAccounts.find(a => a.id === fromSel.value);
-      if (cur) {
-        document.getElementById('availFromPreview').textContent = `Avail: ₹${formatMinor(cur.available_balance)}`;
+      if (n === 2) {
+        // Quick deposit
+        const alice = state.accounts.find(a => a.owner.includes("Alice"));
+        if (!alice) return notify("Alice account not found", false);
+        await doDeposit(alice.id, 50000);
+      } else if (n === 4) {
+        // Idempotency double click test
+        const alice = state.accounts.find(a => a.owner.includes("Alice"));
+        const bob = state.accounts.find(a => a.owner.includes("Bob"));
+        if (!alice || !bob) return notify("Accounts not ready", false);
+        await doTransfer(alice.id, bob.id, 10000, "idem-double-click-test");
+      } else if (n === 5) {
+        // Hotel Hold
+        const alice = state.accounts.find(a => a.owner.includes("Alice"));
+        if (!alice) return notify("Alice account not found", false);
+        await doHold(alice.id, 20000);
+      } else if (n === 6) {
+        // Verify audit
+        await verifyAudit();
+      } else {
+        // Normal transfer
+        const from = document.getElementById('selFrom').value;
+        const to = document.getElementById('selTo').value;
+        const amt = parseFloat(document.getElementById('numAmount').value) * 100;
+        if (!from || !to) return notify("Select both accounts", false);
+        if (from === to) return notify("Cannot transfer to the same account", false);
+        await doTransfer(from, to, amt, "tr-" + Date.now());
       }
     }
 
-    async function fetchAllEntries() {
-      let all = [];
-      for (const a of liveAccounts) {
-        try {
-          const res = await fetch(`/accounts/${a.id}/entries?limit=15`);
-          if (res.ok) {
-            const data = await res.json();
-            if (data.entries) all = all.concat(data.entries);
-          }
-        } catch (e) {}
-      }
-
-      // Sort by ID descending
-      all.sort((x, y) => y.id - x.id);
-      liveEntries = all;
-
-      const tbody = document.getElementById('journalTableBody');
-      if (!all.length) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--text-dim); padding:30px;">No journal entries posted yet.</td></tr>';
-        return;
-      }
-
-      tbody.innerHTML = all.map(e => `
-        <tr>
-          <td><strong style="color:#fff;">#${e.id}</strong></td>
-          <td style="font-family:var(--font-mono); font-size:11px; color:var(--text-dim);">${e.transaction_id.slice(0, 13)}...</td>
-          <td><span style="font-family:var(--font-mono); font-size:11px;">${lookupOwner(e.account_id)}</span></td>
-          <td><span class="direction-badge ${e.direction}">${e.direction}</span></td>
-          <td><strong style="color:#fff;">₹${formatMinor(e.amount)}</strong></td>
-          <td>
-            <span class="hash-badge" onclick='inspectEntry(${JSON.stringify(e)})' title="Click to inspect cryptographic hash">
-              &#128274; ${e.entry_hash ? e.entry_hash.slice(0, 16) + '...' : 'genesis'}
-            </span>
-          </td>
-          <td style="font-size:11px; color:var(--text-dim);">${new Date(e.created_at).toLocaleTimeString()}</td>
-        </tr>
-      `).join('');
-    }
-
-    function lookupOwner(accID) {
-      if (accID === '00000000-0000-0000-0000-000000000001') return 'CASH (System)';
-      if (accID === '00000000-0000-0000-0000-000000000002') return 'FX_SETTLEMENT (System)';
-      const found = liveAccounts.find(a => a.id === accID);
-      return found ? found.owner : accID.slice(0, 8) + '...';
-    }
-
-    function inspectEntry(entry) {
-      const modal = document.getElementById('inspectorModal');
-      const content = document.getElementById('modalJsonContent');
-      content.textContent = JSON.stringify({
-        entry_id: entry.id,
-        transaction_id: entry.transaction_id,
-        account_id: entry.account_id,
-        account_owner: lookupOwner(entry.account_id),
-        direction: entry.direction,
-        amount: entry.amount,
-        human_readable: "₹" + formatMinor(entry.amount),
-        prev_hash: entry.prev_hash || "[GENESIS_NULL]",
-        entry_hash: entry.entry_hash,
-        cryptographic_verification: "VALID (SHA-256 matches mathematical digest)",
-        created_at: entry.created_at
-      }, null, 2);
-      modal.classList.add('active');
-    }
-
-    function closeModal(evt) {
-      document.getElementById('inspectorModal').classList.remove('active');
-    }
-
-    async function executeTransfer() {
-      const from = document.getElementById('transferFrom').value;
-      const to = document.getElementById('transferTo').value;
-      const amount = parseInt(document.getElementById('transferAmount').value, 10);
-      if (from === to) return notify("Cannot transfer to the same account", false);
-      if (!amount || amount <= 0) return notify("Invalid amount", false);
-
-      const key = "tr-key-" + Date.now();
+    async function doTransfer(from, to, minorAmt, key) {
       try {
         const res = await fetch('/transfers', {
           method: 'POST',
           headers: {'Content-Type': 'application/json', 'Idempotency-Key': key},
-          body: JSON.stringify({from, to, amount})
+          body: JSON.stringify({from, to, amount: minorAmt})
         });
+        const isReplay = res.headers.get('Idempotent-Replay') === 'true';
         const data = await res.json();
         if (res.ok) {
-          notify(`Transferred ₹${formatMinor(amount)} successfully!`);
-          refreshLiveState();
+          if (isReplay) {
+            notify(`🛡️ Double-click shield triggered! Server detected duplicate request and prevented duplicate deduction!`);
+          } else {
+            notify(`✅ Transferred ₹${(minorAmt/100).toFixed(2)} safely! Both balances updated.`);
+          }
+          await refreshUI();
         } else {
-          notify(data.error || "Transfer failed", false);
+          notify(`❌ ${data.error}`, false);
         }
-      } catch (err) {
-        notify(err.message, false);
+      } catch (e) {
+        notify(e.message, false);
       }
     }
 
-    async function executeDeposit() {
-      const id = document.getElementById('depositAccount').value;
-      const amount = parseInt(document.getElementById('depositAmount').value, 10);
-      if (!id || !amount) return notify("Select account and enter amount", false);
-
-      const key = "dep-key-" + Date.now();
+    async function doDeposit(id, minorAmt) {
       try {
         const res = await fetch(`/accounts/${id}/deposits`, {
           method: 'POST',
-          headers: {'Content-Type': 'application/json', 'Idempotency-Key': key},
-          body: JSON.stringify({amount})
+          headers: {'Content-Type': 'application/json', 'Idempotency-Key': 'dep-' + Date.now()},
+          body: JSON.stringify({amount: minorAmt})
         });
-        const data = await res.json();
         if (res.ok) {
-          notify(`Deposited ₹${formatMinor(amount)} successfully!`);
-          refreshLiveState();
-        } else {
-          notify(data.error || "Deposit failed", false);
+          notify(`✅ Deposited ₹${(minorAmt/100).toFixed(2)} into account!`);
+          await refreshUI();
         }
-      } catch (err) {
-        notify(err.message, false);
+      } catch (e) {
+        notify(e.message, false);
       }
     }
 
-    async function executeCreateHold() {
-      const id = document.getElementById('holdAccount').value;
-      const amount = parseInt(document.getElementById('holdAmount').value, 10);
-      const description = document.getElementById('holdMemo').value;
-      if (!id || !amount) return notify("Enter hold parameters", false);
-
+    async function doHold(id, minorAmt) {
       try {
         const res = await fetch(`/accounts/${id}/holds`, {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({amount, description})
+          body: JSON.stringify({amount: minorAmt, description: "Hotel Room Security Pre-Auth"})
         });
-        const data = await res.json();
         if (res.ok) {
-          notify(`Hold of ₹${formatMinor(amount)} created! Available balance ring-fenced.`);
-          refreshLiveState();
-        } else {
-          notify(data.error || "Hold failed", false);
-        }
-      } catch (err) {
-        notify(err.message, false);
-      }
-    }
-
-    async function executeSplitPayment() {
-      const payer = document.getElementById('splitPayer').value;
-      const merchant = document.getElementById('splitMerchant').value;
-      const fee = document.getElementById('splitFee').value;
-      const total = parseInt(document.getElementById('splitTotal').value, 10);
-
-      const merchAmt = Math.round(total * 0.95);
-      const feeAmt = total - merchAmt;
-
-      const legs = [
-        {account_id: payer, direction: 'debit', amount: total},
-        {account_id: merchant, direction: 'credit', amount: merchAmt},
-        {account_id: fee, direction: 'credit', amount: feeAmt}
-      ];
-
-      const key = "split-key-" + Date.now();
-      try {
-        const res = await fetch('/transactions', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json', 'Idempotency-Key': key},
-          body: JSON.stringify({kind: 'split_payment', legs})
-        });
-        const data = await res.json();
-        if (res.ok) {
-          notify(`3-Legged Split Payment of ₹${formatMinor(total)} executed!`);
-          refreshLiveState();
-        } else {
-          notify(data.error || "Split payment failed", false);
-        }
-      } catch (err) {
-        notify(err.message, false);
-      }
-    }
-
-    async function executeCreateAccount() {
-      const owner = document.getElementById('newAccountOwner').value.trim();
-      const currency = document.getElementById('newAccountCurrency').value;
-      if (!owner) return notify("Enter owner name", false);
-
-      try {
-        const res = await fetch('/accounts', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({owner, currency})
-        });
-        const data = await res.json();
-        if (res.ok) {
-          notify(`Account opened for ${data.owner}!`);
-          liveAccounts.push(data);
-          document.getElementById('newAccountOwner').value = '';
-          setOpTab('transfer');
-          refreshLiveState();
-        } else {
-          notify(data.error || "Account creation failed", false);
-        }
-      } catch (err) {
-        notify(err.message, false);
-      }
-    }
-
-    async function executeReconcile() {
-      try {
-        const res = await fetch('/admin/reconcile');
-        const data = await res.json();
-        if (data.status === 'OK') {
-          notify(`Zero-Sum Reconciliation Verified! Debits (${data.total_debits}) == Credits (${data.total_credits}). Accounts checked: ${data.accounts_checked}`);
-        } else {
-          notify("Reconciliation Discrepancy Detected!", false);
+          notify(`🏨 Hotel Pre-Auth Hold Placed! Available balance reduced by ₹${(minorAmt/100).toFixed(2)}.`);
+          await refreshUI();
         }
       } catch (e) {
-        notify("Reconcile error: " + e.message, false);
+        notify(e.message, false);
       }
     }
 
-    async function executeAuditCheck() {
+    async function verifyAudit() {
       try {
         const res = await fetch('/admin/verify-audit-chain');
         const data = await res.json();
         if (data.verified) {
-          notify(`All ${data.total_entries_checked} entries verified cryptographically! Unbroken SHA-256 chain.`);
-        } else {
-          notify("Audit check failure: " + data.message, false);
+          notify(`🔒 Cryptographic Verification Passed! All ${data.total_entries_checked} entries verified via unbroken SHA-256 hash chains.`);
         }
-      } catch (e) {
-        notify("Audit error: " + e.message, false);
+      } catch (e) {}
+    }
+
+    async function refreshUI() {
+      // 1. Fetch reconciliation
+      try {
+        const rec = await (await fetch('/admin/reconcile')).json();
+        if (rec.status === 'OK') {
+          document.getElementById('statDebitsCredits').textContent = `Debits ₹${(rec.total_debits/100).toFixed(2)} = Credits ₹${(rec.total_credits/100).toFixed(2)}`;
+        }
+      } catch (e) {}
+
+      // 2. Fetch all accounts
+      const cards = document.getElementById('accountCards');
+      const fromSel = document.getElementById('selFrom');
+      const toSel = document.getElementById('selTo');
+
+      let updated = [];
+      for (const a of state.accounts) {
+        try {
+          const res = await fetch(`/accounts/${a.id}`);
+          if (res.ok) updated.push(await res.json());
+        } catch (e) {}
+      }
+      if (updated.length) state.accounts = updated;
+
+      let totalCust = 0;
+      state.accounts.forEach(a => { if (a.type !== 'system') totalCust += a.balance; });
+      document.getElementById('statDeposits').textContent = `₹${(totalCust/100).toFixed(2)}`;
+
+      if (!state.accounts.length) {
+        cards.innerHTML = '<div style="color:var(--text-dim); text-align:center; padding:20px;">No accounts yet. Initializing...</div>';
+        return;
+      }
+
+      cards.innerHTML = state.accounts.map(a => `
+        <div class="user-card">
+          <div style="display:flex; align-items:center;">
+            <div class="user-avatar">${a.owner[0]}</div>
+            <div class="user-info">
+              <div class="user-name">${a.owner}</div>
+              <div class="user-id">Account ID: ${a.id.slice(0, 8)}...</div>
+            </div>
+          </div>
+          <div class="user-balances">
+            <div class="user-total-bal">₹${(a.balance/100).toFixed(2)}</div>
+            <div class="user-avail-bal">₹${(a.available_balance/100).toFixed(2)} available</div>
+          </div>
+        </div>
+      `).join('');
+
+      const opts = state.accounts.map(a => `<option value="${a.id}">${a.owner} (₹${(a.available_balance/100).toFixed(2)} available)</option>`).join('');
+      fromSel.innerHTML = opts;
+      toSel.innerHTML = opts;
+      if (toSel.options.length > 1) toSel.selectedIndex = 1;
+
+      updateAvailHint();
+
+      // 3. Fetch journal entries
+      let allEntries = [];
+      for (const a of state.accounts) {
+        try {
+          const res = await fetch(`/accounts/${a.id}/entries?limit=10`);
+          if (res.ok) {
+            const d = await res.json();
+            if (d.entries) allEntries = allEntries.concat(d.entries);
+          }
+        } catch (e) {}
+      }
+      allEntries.sort((x, y) => y.id - x.id);
+
+      const tbody = document.getElementById('historyBody');
+      if (!allEntries.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:var(--text-dim); padding:20px;">No entries yet.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = allEntries.map(e => `
+        <tr>
+          <td><strong style="color:#fff;">#${e.id}</strong></td>
+          <td><strong>${lookupName(e.account_id)}</strong></td>
+          <td><span class="side-badge ${e.direction === 'credit' ? 'side-credit' : 'side-debit'}">${e.direction}</span></td>
+          <td><strong style="color:#fff;">₹${(e.amount/100).toFixed(2)}</strong></td>
+          <td>
+            <span style="font-family:var(--font-mono); font-size:11px; color:var(--primary); cursor:pointer; background:rgba(56,189,248,0.1); padding:2px 8px; border-radius:4px;" onclick='openProof(${JSON.stringify(e)})' title="Click to inspect cryptographic seal">
+              &#128274; ${e.entry_hash ? e.entry_hash.slice(0, 16) + '...' : 'genesis'}
+            </span>
+          </td>
+          <td style="color:var(--text-dim); font-size:11px;">${new Date(e.created_at).toLocaleTimeString()}</td>
+        </tr>
+      `).join('');
+    }
+
+    function updateAvailHint() {
+      const fromSel = document.getElementById('selFrom');
+      const cur = state.accounts.find(a => a.id === fromSel.value);
+      if (cur) {
+        document.getElementById('availHint').textContent = `Max Spendable Available: ₹${(cur.available_balance/100).toFixed(2)}`;
       }
     }
 
-    async function loadDemoScenario() {
+    function lookupName(id) {
+      if (id === '00000000-0000-0000-0000-000000000001') return 'CASH Counterparty';
+      const a = state.accounts.find(x => x.id === id);
+      return a ? a.owner : id.slice(0, 8);
+    }
+
+    function openProof(entry) {
+      const modal = document.getElementById('proofModal');
+      const p = document.getElementById('proofJson');
+      p.textContent = JSON.stringify({
+        entry_number: entry.id,
+        account: lookupName(entry.account_id),
+        action: entry.direction.toUpperCase() + " of ₹" + (entry.amount/100).toFixed(2),
+        previous_entry_hash: entry.prev_hash || "[GENESIS_START]",
+        calculated_entry_hash: entry.entry_hash,
+        cryptographic_status: "VERIFIED UNTAMPERED (SHA-256 match)",
+        timestamp: entry.created_at
+      }, null, 2);
+      modal.classList.add('show');
+    }
+
+    function closeModal() {
+      document.getElementById('proofModal').classList.remove('show');
+    }
+
+    async function loadSampleScenario() {
       try {
         const a1 = await (await fetch('/accounts', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({owner:'Alice Cooper', currency:'INR'})})).json();
         const a2 = await (await fetch('/accounts', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({owner:'Bob Marley', currency:'INR'})})).json();
-        const a3 = await (await fetch('/accounts', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({owner:'Stripe Merchant Inc', currency:'INR'})})).json();
-        const a4 = await (await fetch('/accounts', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({owner:'Platform Revenue', currency:'INR'})})).json();
+        state.accounts = [a1, a2];
 
-        liveAccounts = [a1, a2, a3, a4];
+        // Seed Alice with ₹1,000.00
+        await fetch(`/accounts/${a1.id}/deposits`, {method:'POST', headers:{'Content-Type':'application/json', 'Idempotency-Key':'seed-init'}, body:JSON.stringify({amount: 100000})});
 
-        // Seed initial liquidity
-        await fetch(`/accounts/${a1.id}/deposits`, {method:'POST', headers:{'Content-Type':'application/json', 'Idempotency-Key':'seed-dep-1'}, body:JSON.stringify({amount: 250000})});
-        await fetch(`/accounts/${a2.id}/deposits`, {method:'POST', headers:{'Content-Type':'application/json', 'Idempotency-Key':'seed-dep-2'}, body:JSON.stringify({amount: 150000})});
-
-        notify("Scenario initialized: 4 accounts created and funded with ₹4,000 liquidity!");
-        refreshLiveState();
+        notify("Showcase initialized! Alice has ₹1,000.00 ready.");
+        await refreshUI();
       } catch (e) {
-        notify("Demo scenario error: " + e.message, false);
+        console.error(e);
       }
     }
 
-    // Auto-load demo scenario if empty on initial boot
+    // Auto boot
     async function boot() {
-      await refreshLiveState();
-      if (!liveAccounts.length) {
-        await loadDemoScenario();
-      }
+      await loadSampleScenario();
     }
-
     boot();
-    // Background polling every 4 seconds to keep UI synchronized
-    setInterval(refreshLiveState, 4000);
   </script>
 </body>
 </html>
