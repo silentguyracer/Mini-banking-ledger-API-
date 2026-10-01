@@ -1967,14 +1967,50 @@
 
     async function loadDemoScenario() {
       try {
+        const ts = Date.now();
         const a1 = await (await fetch('/accounts', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({owner:'Alice Cooper', currency:'INR'})})).json();
         const a2 = await (await fetch('/accounts', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({owner:'Bob Marley', currency:'INR'})})).json();
         state.accounts = [a1, a2];
 
-        await fetch(`/accounts/${a1.id}/deposits`, {method:'POST', headers:{'Content-Type':'application/json', 'Idempotency-Key':'init-seed'}, body:JSON.stringify({amount: 100000})});
+        // 1. Initial Deposit into Alice (₹1,000.00)
+        await fetch(`/accounts/${a1.id}/deposits`, {
+          method:'POST',
+          headers:{'Content-Type':'application/json', 'Idempotency-Key':'init-seed-' + ts},
+          body:JSON.stringify({amount: 100000})
+        });
 
-        notify("Scenario initialized: Alice has ₹1,000.00 ready.");
+        // 2. Initial P2P Transfer from Alice to Bob (₹350.00)
+        await fetch('/transfers', {
+          method:'POST',
+          headers:{'Content-Type':'application/json', 'Idempotency-Key':'init-tr-' + ts},
+          body:JSON.stringify({from: a1.id, to: a2.id, amount: 35000})
+        });
+
+        // 3. Initial Pre-Auth Hold on Alice (₹200.00)
+        const holdRes = await fetch(`/accounts/${a1.id}/holds`, {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({amount: 20000, description: "Hotel Luxury Suite Pre-Auth"})
+        });
+        if (holdRes.ok) {
+          state.activeHolds = [await holdRes.json()];
+          renderHoldsTable();
+        }
+
+        notify("Scenario initialized: Accounts seeded with deposits, transfers, and active holds.");
         await refreshAll();
+
+        // Check URL parameters for direct state deep-linking
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('tab')) {
+          switchStudioTab(params.get('tab'));
+        }
+        if (params.get('drawer') === 'true') {
+          toggleDrawer();
+        }
+        if (params.get('modal') === 'true') {
+          setTimeout(() => { if (state.allEntries.length) openEntryInspector(0); }, 300);
+        }
       } catch (e) {
         console.error(e);
       }
